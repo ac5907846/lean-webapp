@@ -1,0 +1,212 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lean construction landscape</title>
+<meta name="description" content="Reproducible public-data landscape of lean construction in the United States: which organizations document lean on their websites and since when, where they are, which methods they name, and what the federal owner asks for.">
+<link rel="preload" href="data/summary.json?v=1" as="fetch" crossorigin>
+<link rel="preload" href="data/orgs.json?v=1" as="fetch" crossorigin>
+<link rel="preload" href="data/us-states.json?v=1" as="fetch" crossorigin>
+<link rel="stylesheet" href="css/app.css?v=1">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/topojson/3.0.2/topojson.min.js"></script>
+</head>
+<body>
+<header class="site">
+  <div class="title">
+    <h1>Lean construction in the United States</h1>
+    <p class="sub" id="subtitle">A public-data landscape: who documents lean, since when, where, and what owners ask for</p>
+  </div>
+  <nav class="tabs" id="tabs">
+    <a href="#landscape" data-tab="landscape">Landscape</a>
+    <a href="#organizations" data-tab="organizations">Organizations</a>
+    <a href="#methods" data-tab="methods">Methods</a>
+    <a href="#owners" data-tab="owners">Owners</a>
+    <a href="#projects" data-tab="projects">Projects</a>
+    <a href="#data" data-tab="data">Data</a>
+  </nav>
+</header>
+
+<main id="main">
+  <section id="p-landscape" class="view">
+    <div class="hero">
+      <div class="hero-map">
+        <div class="map-wrap"><svg id="hero-svg" viewBox="0 0 975 610" aria-label="Map of organizations"></svg></div>
+        <div class="map-controls">
+          <div class="chips" id="hero-groups">
+            <button class="chip on" data-g="lci">LCI members</button>
+            <button class="chip on" data-g="enr">ENR Top 400</button>
+            <button class="chip on" data-g="fed">Federal builders</button>
+          </div>
+          <div class="chips" id="hero-mode">
+            <button class="chip on" data-m="all">All organizations</button>
+            <button class="chip" data-m="observed">Website read</button>
+            <button class="chip" data-m="lean">Lean language</button>
+            <button class="chip" data-m="method">Named method</button>
+            <button class="chip" data-m="year">First commitment by year</button>
+          </div>
+          <div class="yearbar" id="hero-yearbar" hidden>
+            <span class="ylab">2008</span><input type="range" id="hero-year" min="2008" max="2026" value="2026"><span class="ylab">2026</span>
+            <span class="yval" id="hero-year-val">2026</span>
+          </div>
+          <div class="playrow"><button class="pill" id="hero-play">Pause</button><div class="progress"><div id="hero-progress"></div></div></div>
+        </div>
+      </div>
+      <aside class="readout" id="hero-readout">
+        <div class="step" id="hero-step">The frame</div>
+        <div class="bignums" id="hero-nums"></div>
+        <p class="note" id="hero-note"></p>
+      </aside>
+    </div>
+    <div class="tip" id="tip" hidden></div>
+
+    <div class="grid2">
+      <figure class="card">
+        <figcaption>Lean language on archived websites, by group</figcaption>
+        <div id="fig-groups"></div>
+        <p class="fine">Organizations whose website was read (archived pages, 2008 to 2026 for the federal builders of the panel; a recent snapshot, 2024 to 2026, for the rest of the frame). Provisional: the dictionary is not yet validated.</p>
+      </figure>
+      <figure class="card">
+        <figcaption>First documented public lean commitment, by year</figcaption>
+        <div id="fig-commit"></div>
+        <p class="fine">Federal builders of the panel with a dated commitment. A commitment is dated by the first observed year with lean language confirmed by a second page. Years without archive coverage are unknown, not zero; Common Crawl coverage starts in 2013.</p>
+      </figure>
+    </div>
+    <div class="grid2">
+      <figure class="card">
+        <figcaption>LCI affiliation in the ENR Top 400, by dominant market and by size</figcaption>
+        <div id="fig-enr"></div>
+        <p class="fine">Share of ENR Top 400 contractors (2025 list) ever listed as an LCI member (2013 to 2026) and listed in 2026, with 95% Wilson intervals.</p>
+      </figure>
+      <figure class="card">
+        <figcaption>Lean Construction Institute directory: member types and growth</figcaption>
+        <div id="fig-lci"></div>
+        <p class="fine">Corporate directory, 2026, by organization type; organizations listed each year by the year first listed (archived directories 2013 to 2026; 2018 has no archive).</p>
+      </figure>
+    </div>
+  </section>
+
+  <section id="p-organizations" class="view" hidden>
+    <div class="toolbar">
+      <input type="search" id="org-search" placeholder="Name, domain, city or state">
+      <div class="chips" id="org-groups">
+        <button class="chip on" data-g="lci">LCI members</button>
+        <button class="chip on" data-g="enr">ENR Top 400</button>
+        <button class="chip on" data-g="fed">Federal builders</button>
+      </div>
+      <select id="org-level">
+        <option value="any">Any website status</option>
+        <option value="observed">Website read</option>
+        <option value="lean">Lean language</option>
+        <option value="method">Named method</option>
+        <option value="dated">Dated commitment</option>
+        <option value="none">Read, no lean language</option>
+      </select>
+      <select id="org-type"><option value="">All organization types</option></select>
+      <select id="org-state"><option value="">All states</option></select>
+      <select id="org-sort">
+        <option value="name">Sort by name</option>
+        <option value="revenue">ENR revenue</option>
+        <option value="awards">Federal awards</option>
+        <option value="pages">Pages read</option>
+        <option value="commit">Commitment year</option>
+        <option value="level">Lean level</option>
+      </select>
+      <span class="count" id="org-count"></span>
+      <button class="pill" id="org-download">Download the list (CSV)</button>
+    </div>
+    <div class="orgs">
+      <div class="orglist" id="org-list"></div>
+      <div class="orgdetail" id="org-detail"><p class="muted">Select an organization.</p></div>
+    </div>
+  </section>
+
+  <section id="p-methods" class="view" hidden>
+    <div class="grid2">
+      <figure class="card">
+        <figcaption>Lean methods named on websites, organizations per method</figcaption>
+        <div class="chips" id="meth-scope">
+          <button class="chip on" data-s="frame">All organizations read</button>
+          <button class="chip" data-s="panel">Panel (federal builders, 2008 to 2026)</button>
+        </div>
+        <div id="fig-methods"></div>
+        <p class="fine">Specific routines name lean construction practice on their own; generic tools count only on a page that also has lean language or a specific routine. Pages with the term, not pages about it.</p>
+      </figure>
+      <figure class="card">
+        <figcaption>Methods named together by the same organization</figcaption>
+        <div id="fig-cooc"></div>
+        <p class="fine">Panel organizations with lean language: number that name both methods anywhere on the archived site.</p>
+      </figure>
+    </div>
+    <figure class="card">
+      <figcaption>Year a method is first named, by organization (panel)</figcaption>
+      <div id="fig-firstyear"></div>
+      <p class="fine">First archived year in which each organization's site names the method. Archive coverage is thin before 2013 and uneven after; a first year is an upper bound on when the method was first named.</p>
+    </figure>
+  </section>
+
+  <section id="p-owners" class="view" hidden>
+    <div class="grid2">
+      <figure class="card wide">
+        <figcaption>Federal construction solicitations naming a delivery method or a lean method, by fiscal year</figcaption>
+        <div class="chips" id="fed-scale"><button class="chip on" data-s="log">Log scale</button><button class="chip" data-s="linear">Linear</button></div>
+        <div id="fig-fed"></div>
+        <p class="fine">SAM.gov Contract Opportunities, construction notices (NAICS 23 and construction classification codes), FY2008 to FY2026; distinct solicitations with a full text. Lean methods: Last Planner, pull planning, target value design, Big Room, takt, choosing by advantages, Lean Construction Institute, lean construction.</p>
+      </figure>
+      <figure class="card">
+        <figcaption>The solicitations that name a lean method</figcaption>
+        <div id="fed-cases"></div>
+      </figure>
+    </div>
+    <div class="grid2">
+      <figure class="card">
+        <figcaption>Contract types in the usable federal construction awards of the panel firms</figcaption>
+        <div id="fig-contracts"></div>
+        <p class="fine">USAspending prime contract awards, NAICS 23, with corrected definitions and nine restrictions (153,355 usable awards, FY2008 to FY2026); here the awards of the 444 panel firms. Pricing type, extent of competition and kind of work as recorded in FPDS.</p>
+      </figure>
+      <figure class="card">
+        <figcaption>Delivery terms by department (solicitations, FY2008 to FY2026)</figcaption>
+        <div id="fig-dep"></div>
+      </figure>
+      <figure class="card">
+        <figcaption>Owners in the LCI directory</figcaption>
+        <div id="fig-owners"></div>
+        <p class="fine">Owner members of the Lean Construction Institute, 2026, by sector; owners are the organizations that can require lean on their projects.</p>
+      </figure>
+    </div>
+  </section>
+
+  <section id="p-projects" class="view" hidden>
+    <div class="grid2">
+      <figure class="card">
+        <figcaption>Projects described as lean on contractor websites</figcaption>
+        <div class="map-wrap small"><svg id="proj-svg" viewBox="0 0 975 610" aria-label="Map of lean projects"></svg></div>
+        <p class="fine">Project pages with lean language, read by three local language models with fixed categories and a verbatim quote checked against the page. Records so far come from the first six firms read; a hand check is pending.</p>
+      </figure>
+      <figure class="card">
+        <figcaption>Project types, owners and delivery methods</figcaption>
+        <div id="fig-projtypes"></div>
+      </figure>
+    </div>
+    <div class="cards" id="proj-cards"></div>
+  </section>
+
+  <section id="p-data" class="view" hidden>
+    <div class="card prose" id="data-body"></div>
+  </section>
+</main>
+<footer class="site"><span id="foot"></span></footer>
+
+<script src="js/motion.js?v=1"></script>
+<script src="js/charts.js?v=1"></script>
+<script src="js/usmap.js?v=1"></script>
+<script src="js/landscape.js?v=1"></script>
+<script src="js/organizations.js?v=1"></script>
+<script src="js/methods.js?v=1"></script>
+<script src="js/owners.js?v=1"></script>
+<script src="js/projects.js?v=1"></script>
+<script src="js/datatab.js?v=1"></script>
+<script src="js/app.js?v=1"></script>
+</body>
+</html>
