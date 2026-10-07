@@ -24,7 +24,7 @@ footer.site { padding: 12px 24px 28px; color: var(--muted); font-size: 12px; bor
 
 .hero { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 16px; align-items: stretch; }
 .hero-map { background: var(--card); border: 1px solid var(--line); border-radius: 8px; padding: 8px; }
-.map-wrap { width: 100%; aspect-ratio: 975 / 610; }
+.map-wrap { width: 100%; aspect-ratio: 975 / 610; position: relative; }
 .map-wrap.small { max-width: 100%; }
 .map-wrap svg { width: 100%; height: 100%; display: block; }
 .map-controls { display: flex; flex-direction: column; gap: 6px; padding: 6px 4px 0; }
@@ -42,8 +42,6 @@ footer.site { padding: 12px 24px 28px; color: var(--muted); font-size: 12px; bor
 .playrow { display: flex; align-items: center; gap: 10px; }
 .pill { font: inherit; font-size: 12px; padding: 3px 12px; border: 1px solid var(--line); border-radius: 999px; background: #fff; cursor: pointer; }
 .pill:hover { background: #f1efe8; }
-.progress { flex: 1; height: 3px; background: var(--off); border-radius: 2px; overflow: hidden; }
-.progress div { height: 100%; width: 0; background: var(--ink); transition: width .2s linear; }
 
 .readout { background: var(--card); border: 1px solid var(--line); border-radius: 8px; padding: 16px; display: flex; flex-direction: column; gap: 10px; }
 .readout .step { font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
@@ -132,7 +130,6 @@ svg text { font-family: var(--sans); font-size: 11.5px; fill: var(--ink); }
   .bignum .v { font-size: 30px; }
   nav.tabs a { padding: 6px 8px; font-size: 12.5px; }
 }
-@media (prefers-reduced-motion: reduce) { .progress div { transition: none; } }
 
 .pages { padding-left: 16px; margin: 4px 0; font-size: 12px; }
 .pages li { margin-bottom: 3px; word-break: break-all; }
@@ -144,3 +141,10 @@ svg text { font-family: var(--sans); font-size: 11.5px; fill: var(--ink); }
 .gap { height: 6px; }
 a.tag { text-decoration: none; background: #e8f1ee; }
 a.tag:hover { background: #d7e8e2; }
+th.sortable { cursor: pointer; user-select: none; white-space: nowrap; }
+th.sortable:hover { color: var(--ink); text-decoration: underline; }
+th.sortable .arr { font-size: 9px; margin-left: 2px; }
+.maplegend { display: flex; flex-wrap: wrap; align-items: center; gap: 2px 14px; font-size: 11.5px; color: var(--muted); padding: 2px 2px 0; min-height: 20px; }
+.maplegend .t { font-weight: 600; color: var(--ink); }
+.maplegend div { display: flex; align-items: center; gap: 4px; white-space: nowrap; }
+.maplegend svg { flex: none; width: 18px; height: 18px; }

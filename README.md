@@ -7,9 +7,12 @@ of `02_analysis` (through `core.out()`); nothing else is computed in the browser
 Tabs (hash router, `#landscape` ... `#data`):
 - Landscape: the hero map of every organization in the frame (1,076: ENR Top 400, LCI corporate members, federal
   builders of the panel) with a tour (frame, websites read, lean language, named methods, first commitments by year)
-  and a readout of counts; lean language by group; first commitments by year; LCI affiliation in the ENR Top 400;
+  that loops until its Pause button is pressed (owner request 2026-10-07), a legend of the dots under the map, and a
+  readout of counts; lean language by group; first commitments by year; LCI affiliation in the ENR Top 400;
   LCI member types and growth.
-- Organizations: filtered list and a detail panel (profile, LCI years, year-by-year coverage strip, methods named).
+- Organizations: filtered list (click a column header to sort, again to flip) and a detail panel (profile, LCI years,
+  year-by-year coverage strip, methods named, archived pages with lean language linked to the Wayback Machine and to
+  the live page, contract types, source links).
   `#organizations/<id>` opens one organization (the map dots link here).
 - Methods: organizations per method, co-occurrence bubble matrix, first year each method is named.
 - Owners: federal solicitations by fiscal year and term (log or linear), the two lean solicitations, departments,

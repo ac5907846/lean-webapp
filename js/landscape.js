@@ -46,17 +46,30 @@ window.Landscape = (function () {
       let el = box.children[i];
       if (!el) { el = document.createElement("div"); el.className = "bignum"; el.innerHTML = '<div class="v"></div><div class="l"></div>'; box.appendChild(el); }
       el.className = "bignum " + (n.cls || "");
-      M.countTo(el.querySelector(".v"), n.v, { suffix: n.suffix || "", decimals: n.d || 0, raw: !!n.raw, ms: n.raw ? 0 : 700 });
-      el.querySelector(".l").textContent = n.l;
+      const lab = el.querySelector(".l"), same = lab.textContent === n.l;   // a new quantity counts from 0, the same one carries
+      M.countTo(el.querySelector(".v"), n.v, { suffix: n.suffix || "", decimals: n.d || 0, raw: !!n.raw, ms: n.raw ? 0 : 700, from: same ? null : 0 });
+      lab.textContent = n.l;
     });
     while (box.children.length > nums.length) box.removeChild(box.lastChild);
     $("hero-note").textContent = note || "";
   }
 
+  // Legend of the dots, one per mode; the symbols repeat the styles of style() above.
+  const dot = (fill, stroke, r) => `<svg viewBox="0 0 20 20"><circle cx="10" cy="10" r="${r}" fill="${fill}" stroke="${stroke}" stroke-width="1"/></svg>`;
+  const groupDots = () => ["lci", "enr", "fed"].map((g) => `<div>${dot(G[g].fill, G[g].dark, 3.5)}${G[g].name}</div>`).join("");
+  const notRead = `<div>${dot("#fff", "#ccc", 2)}website not read</div>`;
+  const LEGEND = {
+    all: () => `<div class="t">One dot per organization, at its headquarters</div>${groupDots()}`,
+    observed: () => `<div class="t">Archived website read</div>${groupDots()}${notRead}`,
+    lean: () => `<div class="t">Highest level of lean language found</div><div>${dot(C.LEVEL[1], "#7a3b12", 5)}general lean language</div><div>${dot(C.LEVEL[2], "#7a3b12", 6)}names a lean routine</div><div>${dot(C.LEVEL[3], "#7a3b12", 7)}three or more routines on one page</div><div>${dot("#fff", "#888", 2.5)}read, no lean language (color of the group)</div>${notRead}`,
+    method: () => `<div class="t">Named lean routines</div><div>${dot(C.LEVEL[2], "#7a3b12", 6.5)}names a lean routine</div><div>${dot(C.LEVEL[3], "#7a3b12", 7.5)}three or more routines on one page</div><div>${dot("#fff", "#888", 2.5)}read, no routine named</div>${notRead}`,
+    year: () => `<div class="t">Federal builders in the panel, by year</div><div>${dot("#c8553d", "#7a1f10", 8)}first documented commitment this year</div><div>${dot("#c8553d", "#7a1f10", 5)}committed in an earlier year</div><div>${dot("#fff", "#888", 2.5)}observed, no lean language yet</div><div>${dot("#fff", "#ddd", 1.6)}not observed yet, or not in the panel</div>`,
+  };
   function setMode(m) {
     mode = m;
     document.querySelectorAll("#hero-mode .chip").forEach((c) => c.classList.toggle("on", c.dataset.m === m));
     $("hero-yearbar").hidden = m !== "year";
+    $("hero-legend").innerHTML = LEGEND[m]();
   }
 
   let gs;
@@ -128,7 +141,7 @@ window.Landscape = (function () {
         { ms: 5000, enter: stepAll }, { ms: 5000, enter: stepObserved }, { ms: 6000, enter: stepLean }, { ms: 6000, enter: stepMethod },
         { ms: 14500, enter: () => stepYear(true) },
       ],
-      button: $("hero-play"), progress: $("hero-progress"), onPause: () => clearInterval(yearTimer), loop: true,
+      button: $("hero-play"), onPause: () => clearInterval(yearTimer), loop: true,
     });
   }
 
@@ -177,7 +190,9 @@ window.Landscape = (function () {
     figGroups(); figCommit(); figEnr(); figLci();
     C.onResize(() => { figGroups(); figCommit(); figEnr(); figLci(); });
   }
-  function show(first) { if (first && tour && !tour.playing && tour.index < 0) tour.play(); else if (tour && tour.index < 0) stepAll(); }
-  function hide() { if (tour) tour.pause(); clearInterval(yearTimer); }
+  // The tour runs until its Pause button is pressed; leaving the tab only suspends it and coming back resumes it.
+  let resumeOnShow = true;
+  function show() { if (tour && resumeOnShow && !tour.playing) tour.play(); else if (tour && tour.index < 0) stepAll(); }
+  function hide() { if (tour) { resumeOnShow = tour.playing; tour.pause(); } clearInterval(yearTimer); }
   return { init, show, hide };
 })();

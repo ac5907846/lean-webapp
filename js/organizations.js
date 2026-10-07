@@ -25,7 +25,7 @@ window.Organizations = (function () {
 
   function filtered() {
     const q = $("org-search").value.trim().toLowerCase();
-    const lv = $("org-level").value, st = $("org-state").value, sort = $("org-sort").value, ty = $("org-type").value;
+    const lv = $("org-level").value, st = $("org-state").value, ty = $("org-type").value;
     let rows = orgs.filter((d) => groupsOn.has(d.group));
     if (ty) rows = rows.filter((d) => d.type === ty);
     if (q) rows = rows.filter((d) => [d.name, d.domain, d.city, d.state].filter(Boolean).join(" ").toLowerCase().includes(q));
@@ -35,10 +35,26 @@ window.Organizations = (function () {
     if (lv === "method") rows = rows.filter((d) => d.level >= 2);
     if (lv === "dated") rows = rows.filter((d) => d.commit_year != null);
     if (lv === "none") rows = rows.filter((d) => d.level === 0);
-    const key = { name: (d) => d.name.toLowerCase(), revenue: (d) => -(d.revenue_musd || 0), awards: (d) => -(d.fed_awards || 0), pages: (d) => -((d.pages || 0) + (d.recent_pages || 0)),
-                  commit: (d) => d.commit_year || 9999, level: (d) => -(d.level ?? -1) }[sort];
-    rows.sort((a, b) => (key(a) > key(b) ? 1 : key(a) < key(b) ? -1 : a.name.localeCompare(b.name)));
+    const key = KEYS[sortKey], dir = sortDesc ? -1 : 1;
+    rows.sort((a, b) => (key(a) > key(b) ? dir : key(a) < key(b) ? -dir : a.name.localeCompare(b.name)));
     return rows;
+  }
+
+  // Column sort: a click on a header sorts by it (counts descending first, text and years ascending first), a second
+  // click flips the direction. Missing values sort last in both directions.
+  const COLS = [["name", "Organization"], ["type", "Type"], ["state", "State"], ["rank", "ENR rank", "num"], ["revenue", "Revenue $M", "num"], ["awards", "Federal awards", "num"],
+                ["pages", "Pages read", "num"], ["level", "Lean"], ["commit", "Committed", "num"], ["methods", "Methods", "num"]];
+  const DESC_FIRST = new Set(["revenue", "awards", "pages", "level", "methods"]);
+  let sortKey = "name", sortDesc = false;
+  const last = (v) => (v == null ? (sortDesc ? -Infinity : Infinity) : v);
+  const KEYS = {
+    name: (d) => d.name.toLowerCase(), type: (d) => (d.type ? (SHORT[d.type] || d.type).toLowerCase() : null) ?? (sortDesc ? "" : "~"), state: (d) => d.state || (sortDesc ? "" : "~"),
+    rank: (d) => last(d.enr_rank), revenue: (d) => last(d.revenue_musd), awards: (d) => last(d.fed_awards), pages: (d) => last((d.pages || 0) + (d.recent_pages || 0) || null),
+    level: (d) => last(d.level), commit: (d) => last(d.commit_year), methods: (d) => last(d.methods && d.methods.length ? d.methods.length : null),
+  };
+  function sortBy(k) {
+    if (k === sortKey) sortDesc = !sortDesc; else { sortKey = k; sortDesc = DESC_FIRST.has(k); }
+    shown = 150; renderList();
   }
 
   function lvlTag(d) { return d.level == null ? '<span class="lvl" style="color:#aaa">not read</span>' : `<span class="lvl l${d.level}" title="${LVL[d.level]}">${d.level}</span>`; }
@@ -47,12 +63,13 @@ window.Organizations = (function () {
     const rows = filtered();
     $("org-count").textContent = `${C.fmt(rows.length)} organizations`;
     const el = $("org-list");
-    const head = `<tr><th>Organization</th><th>Type</th><th>State</th><th class="num">ENR rank</th><th class="num">Revenue $M</th><th class="num">Federal awards</th><th class="num">Pages read</th><th>Lean</th><th class="num">Committed</th><th class="num">Methods</th></tr>`;
+    const head = `<tr>${COLS.map(([k, label, cls]) => `<th class="sortable ${cls || ""}" data-k="${k}" title="Sort by ${label.toLowerCase()}">${label}${k === sortKey ? `<span class="arr">${sortDesc ? "▼" : "▲"}</span>` : ""}</th>`).join("")}</tr>`;
     const body = rows.slice(0, shown).map((d) => `<tr data-id="${d.id}" class="${selected && selected.id === d.id ? "sel" : ""}">
       <td><span class="dot ${d.group}"></span>${d.name}</td><td class="muted">${SHORT[d.type] || d.type}</td><td>${d.state || ""}</td><td class="num">${d.enr_rank || ""}</td><td class="num">${d.revenue_musd ? C.fmt(Math.round(d.revenue_musd)) : ""}</td>
       <td class="num">${d.fed_awards || ""}</td><td class="num">${(d.pages || 0) + (d.recent_pages || 0) || ""}</td><td>${lvlTag(d)}</td><td class="num">${d.commit_year || ""}</td><td class="num">${d.methods && d.methods.length ? d.methods.length : ""}</td></tr>`).join("");
     el.innerHTML = `<table>${head}${body}</table>` + (rows.length > shown ? `<div class="more"><button class="pill" id="org-more">Show ${Math.min(150, rows.length - shown)} more</button></div>` : "");
     el.querySelectorAll("tr[data-id]").forEach((tr) => tr.addEventListener("click", () => select(tr.dataset.id)));
+    el.querySelectorAll("th[data-k]").forEach((th) => th.addEventListener("click", () => sortBy(th.dataset.k)));
     const more = $("org-more"); if (more) more.addEventListener("click", () => { shown += 150; renderList(); });
   }
 
@@ -90,7 +107,7 @@ window.Organizations = (function () {
         h += `<p class="fine">Each cell is a year: hatched = no archive coverage (unknown), white = observed without lean language, yellow to red = highest level found that year.</p>`;
       }
       if (d.methods && d.methods.length) h += `<h3>Methods named</h3><div class="tags">${d.methods.map((m) => `<span class="tag">${names[m] || m}</span>`).join("")}</div>`;
-      if (d.pages_evidence) h += `<h3>Archived pages with lean language</h3><ul class="pages">${d.pages_evidence.map((p) => `<li><a href="${p.link}" target="_blank" rel="noopener">${p.url.replace(/^https?:\/\/(www\.)?/, "").slice(0, 70)}</a> <span class="muted">${p.year}, ${p.source}, level ${p.level}</span></li>`).join("")}</ul><p class="fine">Links open the archived copy (Wayback Machine) or the Common Crawl index record of the page.</p>`;
+      if (d.pages_evidence) h += `<h3>Archived pages with lean language</h3><ul class="pages">${d.pages_evidence.map((p) => `<li><a href="${p.link}" target="_blank" rel="noopener">${p.url.replace(/^https?:\/\/(www\.)?/, "").slice(0, 70)}</a> <span class="muted">${p.year}, ${p.source}, level ${p.level}</span> <a class="muted" href="${p.url}" target="_blank" rel="noopener">live</a></li>`).join("")}</ul><p class="fine">The page link opens the archived copy in the Wayback Machine (for pages read from Common Crawl, the capture closest to that year, if the Wayback Machine has one); "live" opens the current page.</p>`;
     }
     if (d.contracts) {
       h += `<h3>Usable federal awards: contract types</h3>${shares(d.contracts.pricing)}<div class="gap"></div>${shares(d.contracts.compete)}<div class="gap"></div>${shares(d.contracts.work)}`;
@@ -105,7 +122,7 @@ window.Organizations = (function () {
     $("org-state").innerHTML = '<option value="">All states</option>' + states.map((s) => `<option>${s}</option>`).join("");
     const types = [...new Set(orgs.map((d) => d.type).filter(Boolean))].sort();
     $("org-type").innerHTML = '<option value="">All organization types</option>' + types.map((s) => `<option>${s}</option>`).join("");
-    ["org-search", "org-level", "org-state", "org-sort", "org-type"].forEach((id) => $(id).addEventListener("input", () => { shown = 150; renderList(); }));
+    ["org-search", "org-level", "org-state", "org-type"].forEach((id) => $(id).addEventListener("input", () => { shown = 150; renderList(); }));
     $("org-download").addEventListener("click", () => csv(filtered()));
     document.querySelectorAll("#org-groups .chip").forEach((c) => c.addEventListener("click", () => {
       c.classList.toggle("on"); if (c.classList.contains("on")) groupsOn.add(c.dataset.g); else groupsOn.delete(c.dataset.g); shown = 150; renderList();

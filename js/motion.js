@@ -1,4 +1,4 @@
-// Motion helpers: count-ups that carry from the previous value, a tour runner that pauses on any interaction,
+// Motion helpers: count-ups that carry from the previous value, a looping tour runner with a Play/Pause button,
 // and a reduced-motion switch. No dependencies.
 window.M = (function () {
   const reduced = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -6,8 +6,8 @@ window.M = (function () {
   const fmt = (v, d, raw) => (raw ? String(Math.round(v)) : d ? v.toFixed(d) : Math.round(v).toLocaleString("en-US"));
   const current = new WeakMap();
 
-  function countTo(el, value, { decimals = 0, suffix = "", ms = 700, raw = false } = {}) {
-    const from = current.get(el) ?? 0;
+  function countTo(el, value, { decimals = 0, suffix = "", ms = 700, raw = false, from = null } = {}) {
+    if (from == null) from = current.get(el) ?? 0;
     current.set(el, value);
     if (reduced || ms === 0 || from === value) { el.textContent = fmt(value, decimals, raw) + suffix; return; }
     const t0 = performance.now();
@@ -20,8 +20,9 @@ window.M = (function () {
     raf(step);
   }
 
-  // A tour: an ordered list of steps {ms, enter()}; autoplays once, pauses on any pointer, key, wheel or touch.
-  function tour({ steps, button, progress, onPause, onPlay, loop = true }) {
+  // A tour: an ordered list of steps {ms, enter()}; loops until the button pauses it (pauseOnInteraction: also on
+  // any pointer, key, wheel or touch).
+  function tour({ steps, button, progress, onPause, onPlay, loop = true, pauseOnInteraction = false }) {
     let i = -1, timer = null, playing = false, startedAt = 0, remaining = 0, bar = null;
     const setBtn = () => { if (button) button.textContent = playing ? "Pause" : "Play"; };
     function tick() {
@@ -43,7 +44,7 @@ window.M = (function () {
     function resume() { startedAt = performance.now() - (steps[i].ms - remaining); clearTimeout(timer); timer = setTimeout(() => go(i + 1), remaining); }
     function pause() { if (!playing) return; playing = false; setBtn(); clearTimeout(timer); remaining = Math.max(0, steps[i].ms - (performance.now() - startedAt)); onPause && onPause(); }
     const stop = () => pause();
-    ["pointerdown", "keydown", "wheel", "touchstart"].forEach((e) => window.addEventListener(e, (ev) => { if (button && ev.target === button) return; stop(); }, { passive: true }));
+    if (pauseOnInteraction) ["pointerdown", "keydown", "wheel", "touchstart"].forEach((e) => window.addEventListener(e, (ev) => { if (button && ev.target === button) return; stop(); }, { passive: true }));
     if (button) button.addEventListener("click", () => (playing ? pause() : play()));
     setBtn();
     return { play, pause, go, get playing() { return playing; }, get index() { return i; } };
