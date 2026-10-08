@@ -129,6 +129,9 @@ window.Organizations = (function () {
     }));
     renderList();
   }
-  function show(first, arg) { if (arg) { select(decodeURIComponent(arg), true); } }
+  function show(first, arg) {
+    if (arg) select(decodeURIComponent(arg), true);
+    else if (!selected) { const first0 = filtered()[0]; if (first0) select(first0.id); }   // the detail panel is never empty
+  }
   return { init, show, hide() {} };
 })();

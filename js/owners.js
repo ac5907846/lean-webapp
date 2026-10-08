@@ -39,9 +39,9 @@ window.Owners = (function () {
     C.lines($("fig-fed"), series, { h: 300, yLabel: asShare ? "share of the year\u2019s solicitations with a full text, %" : "solicitations naming the term",
       yFmt: asShare ? (v) => v.toFixed(v < 1 && v > 0 ? 1 : 0) + "%" : C.fmt,
       tip: (k, v) => `<b>FY${v.x}</b>${k.name}: ${C.fmt(v.n)} of ${C.fmt(v.of)} solicitations (${(100 * v.n / v.of).toFixed(v.n && v.n < v.of / 100 ? 2 : 1)}%)` });
-    const rows = f.by_department.map((r) => ({ label: depName(r.department), n: r.solicitations, values: Object.fromEntries(keys.map((k) => [k, r[k] / r.solicitations])) }));
-    const xmax = Math.min(1, 1.15 * (d3.max(rows, (r) => d3.max(keys, (k) => r.values[k])) || .01));
-    C.hbars($("fig-dep"), rows, keys.map((k) => ({ key: k, name: f.terms[k], fill: COLORS[k], dark: COLORS[k] })), { share: true, rowH: 10, gap: 9, left: 170, xmax, pctDigits: 1 });
+    const rows = f.by_department.map((r) => ({ label: depName(r.department), n: r.solicitations, values: Object.fromEntries(keys.map((k) => [k, r[k] / r.solicitations])), counts: Object.fromEntries(keys.map((k) => [k, r[k]])) }));
+    const SHORT = { design_build: "Design-build", idiq_matoc: "IDIQ / MATOC", design_bid_build: "Design-bid-build", cm_at_risk: "CM at risk", progressive_design_build: "Progressive DB", eci: "ECI", ipd: "IPD", any_lean: "Lean" };
+    C.heatTable($("fig-dep"), rows, keys.map((k) => ({ key: k, name: f.terms[k], short: SHORT[k], color: COLORS[k] })));
   }
 
   // C. the two notices that name lean
@@ -79,10 +79,18 @@ window.Owners = (function () {
         return `<tr><td>${o ? `<a href="#organizations/${encodeURIComponent(o.id)}">${m.name}</a>` : m.name}</td><td class="muted">${sectorName(m.sector || "OTHER")}</td><td>${m.state || ""}</td><td>${m.lean === "YES" ? "yes" : ""}</td><td><a class="muted" href="https://leanconstruction.org/sponsors/${m.slug}/" target="_blank" rel="noopener">LCI</a></td></tr>`;
       }).join("") + `</table>`;
     const all = $("own-all"); if (all) all.addEventListener("click", (ev) => { ev.preventDefault(); sector = null; figOwners(); });
+    // the owner members on the map; the chosen sector is drawn larger, the others faded
+    const pts = owners.filter((m) => m.lat != null).map((m) => ({ ...m, id: m.slug }));
+    const SC = { HEALTH: "#c8553d", PRIVATE: "#4a3b8c", EDUCATION: "#0f6b5b", ENERGY: "#a9491a", GOVERNMENT: "#a07a00" };
+    ownMap.update(pts, (m) => { const on = !sector || (m.sector || "OTHER") === sector; return { fill: SC[m.sector] || "#888", stroke: "#fff", r: on ? 7 : 4, opacity: on ? .95 : .35 }; },
+      { ms: 300, tip: (m) => `<b>${m.name}</b><span class="m">${sectorName(m.sector || "OTHER")} \u00b7 ${[m.city, m.state].filter(Boolean).join(", ")}</span>`,
+        onClick: (m) => { const o = byName.get(m.name.toLowerCase()); if (o) location.hash = "#organizations/" + encodeURIComponent(o.id); } });
   }
+  let ownMap = null;
 
   function init(data) {
     f = data.federal; lci = data.lci; ct = data.contracts; orgs = data.orgs;
+    ownMap = USMap($("own-svg"), data.topo);
     const chips = $("fed-terms");
     chips.innerHTML = TERMS.map((k) => `<button class="chip ${termsOn.has(k) ? "on" : ""}" data-t="${k}" style="--c:${COLORS[k]}">${f.terms[k]}</button>`).join("");
     chips.querySelectorAll(".chip").forEach((c) => c.addEventListener("click", () => {

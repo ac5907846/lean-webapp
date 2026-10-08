@@ -5,10 +5,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Lean construction landscape</title>
 <meta name="description" content="Reproducible public-data landscape of lean construction in the United States: which organizations document lean on their websites and since when, where they are, which methods they name, and what the federal owner asks for.">
-<link rel="preload" href="data/summary.json?v=4" as="fetch" crossorigin>
-<link rel="preload" href="data/orgs.json?v=4" as="fetch" crossorigin>
-<link rel="preload" href="data/us-states.json?v=4" as="fetch" crossorigin>
-<link rel="stylesheet" href="css/app.css?v=4">
+<link rel="preload" href="data/summary.json?v=5" as="fetch" crossorigin>
+<link rel="preload" href="data/orgs.json?v=5" as="fetch" crossorigin>
+<link rel="preload" href="data/us-states.json?v=5" as="fetch" crossorigin>
+<link rel="stylesheet" href="css/app.css?v=5">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/topojson/3.0.2/topojson.min.js"></script>
 </head>
@@ -40,50 +40,55 @@
             <button class="chip on" data-g="enr">ENR Top 400</button>
             <button class="chip on" data-g="fed">Federal builders</button>
           </div>
-          <div class="chips" id="hero-mode">
+          <div class="yearbar" id="hero-yearbar" hidden>
+            <span class="ylab">2008</span><input type="range" id="hero-year" min="2008" max="2026" value="2026"><span class="ylab">2026</span>
+            <span class="yval" id="hero-year-val">2026</span>
+          </div>
+        </div>
+      </div>
+      <div class="hero-side">
+        <aside class="readout" id="hero-readout">
+          <div class="step" id="hero-step">The frame</div>
+          <div class="bignums" id="hero-nums"></div>
+          <div class="steps" id="hero-mode">
             <button class="chip on" data-m="all">All organizations</button>
             <button class="chip" data-m="observed">Website read</button>
             <button class="chip" data-m="lean">Lean language</button>
             <button class="chip" data-m="method">Named method</button>
             <button class="chip" data-m="year">First commitment by year</button>
+            <button class="pill" id="hero-play">Pause</button>
           </div>
-          <div class="yearbar" id="hero-yearbar" hidden>
-            <span class="ylab">2008</span><input type="range" id="hero-year" min="2008" max="2026" value="2026"><span class="ylab">2026</span>
-            <span class="yval" id="hero-year-val">2026</span>
-          </div>
-          <div class="playrow"><button class="pill" id="hero-play">Pause</button></div>
-        </div>
+          <p class="note" id="hero-note"></p>
+        </aside>
+        <figure class="card">
+          <figcaption>Lean language on archived websites, by group</figcaption>
+          <div id="fig-groups"></div>
+          <p class="fine">Organizations whose website was read (2008 to 2026 for the federal builders of the panel; 2024 to 2026 for the rest of the frame). Provisional: the dictionary is not yet validated.</p>
+        </figure>
       </div>
-      <aside class="readout" id="hero-readout">
-        <div class="step" id="hero-step">The frame</div>
-        <div class="bignums" id="hero-nums"></div>
-        <p class="note" id="hero-note"></p>
-      </aside>
     </div>
     <div class="tip" id="tip" hidden></div>
 
-    <div class="grid2">
-      <figure class="card">
-        <figcaption>Lean language on archived websites, by group</figcaption>
-        <div id="fig-groups"></div>
-        <p class="fine">Organizations whose website was read (archived pages, 2008 to 2026 for the federal builders of the panel; a recent snapshot, 2024 to 2026, for the rest of the frame). Provisional: the dictionary is not yet validated.</p>
-      </figure>
+    <div class="masonry">
       <figure class="card">
         <figcaption>First documented public lean commitment, by year</figcaption>
         <div id="fig-commit"></div>
         <p class="fine">Federal builders of the panel with a dated commitment. A commitment is dated by the first observed year with lean language confirmed by a second page. Years without archive coverage are unknown, not zero; Common Crawl coverage starts in 2013.</p>
       </figure>
-    </div>
-    <div class="grid2">
       <figure class="card">
         <figcaption>LCI affiliation in the ENR Top 400, by dominant market and by size</figcaption>
         <div id="fig-enr"></div>
         <p class="fine">Share of ENR Top 400 contractors (2025 list) ever listed as an LCI member (2013 to 2026) and listed in 2026, with 95% Wilson intervals.</p>
       </figure>
       <figure class="card">
-        <figcaption>Lean Construction Institute directory: member types and growth</figcaption>
-        <div id="fig-lci"></div>
-        <p class="fine">Corporate directory, 2026, by organization type; organizations listed each year by the year first listed (archived directories 2013 to 2026; 2018 has no archive).</p>
+        <figcaption>Lean Construction Institute directory: member types</figcaption>
+        <div id="fig-lci-types"></div>
+        <p class="fine">Corporate directory, 2026, by organization type; the second bar counts the members whose directory entry claims lean practice.</p>
+      </figure>
+      <figure class="card">
+        <figcaption>Lean Construction Institute directory: growth by cohort</figcaption>
+        <div id="fig-lci-growth"></div>
+        <p class="fine">Organizations listed each year, by the year first listed (archived directories 2013 to 2026; 2018 has no archive).</p>
       </figure>
     </div>
   </section>
@@ -121,19 +126,21 @@
       <button class="chip on enr" data-g="enr">ENR Top 400, not LCI</button>
       <button class="chip on fed" data-g="fed">Federal builders</button>
     </div>
-    <div class="grid2">
-      <figure class="card">
-        <figcaption>Lean methods named on websites, organizations per method</figcaption>
-        <div id="fig-methods"></div>
-        <p class="fine">Any archived page of the organization, 2008 to 2026. Specific routines name lean construction practice on their own; generic tools count only on a page that also has lean language or a specific routine. Click a method to list the organizations.</p>
-      </figure>
+    <div class="grid2 cols">
+      <div class="col">
+        <figure class="card">
+          <figcaption>Lean methods named on websites, organizations per method</figcaption>
+          <div id="fig-methods"></div>
+          <p class="fine">Any archived page of the organization, 2008 to 2026. Specific routines name lean construction practice on their own; generic tools count only on a page that also has lean language or a specific routine. Click a method to list the organizations.</p>
+        </figure>
+        <div class="card" id="meth-list"></div>
+      </div>
       <figure class="card">
         <figcaption>Methods named together by the same organization</figcaption>
         <div id="fig-cooc"></div>
         <p class="fine">Diagonal: organizations naming the method; off the diagonal: organizations naming both. Methods named by 3 or more organizations in the chosen groups. Click a circle to list them.</p>
       </figure>
     </div>
-    <div class="card" id="meth-list"></div>
     <figure class="card">
       <figcaption>Year a method is first named, by organization (federal builders of the panel, 2008 to 2026)</figcaption>
       <div id="fig-firstyear"></div>
@@ -160,7 +167,7 @@
       <figure class="card">
         <figcaption>The same terms by department, FY2008 to FY2026</figcaption>
         <div id="fig-dep"></div>
-        <p class="fine">Share of each department’s solicitations naming the term; the ten departments with the most construction solicitations.</p>
+        <p class="fine">Share of each department’s solicitations naming the term (darker = larger share; hover for the counts); the ten departments with the most construction solicitations.</p>
       </figure>
       <figure class="card">
         <figcaption>The only solicitations that name a lean method</figcaption>
@@ -176,13 +183,13 @@
     </figure>
     <figure class="card">
       <figcaption>Owners that joined the Lean Construction Institute, 2026</figcaption>
-      <div class="grid2 tight"><div id="fig-owners"></div><div id="own-list"></div></div>
-      <p class="fine">Owner members of the LCI corporate directory by sector. Click a sector to list its members; the organization name opens its page here, "LCI" its directory entry.</p>
+      <div class="grid2 tight owners"><div><div id="fig-owners"></div><div class="map-wrap small"><svg id="own-svg" viewBox="0 0 975 610" aria-label="Map of LCI owner members"></svg></div></div><div id="own-list"></div></div>
+      <p class="fine">Owner members of the LCI corporate directory by sector and on the map (headquarters). Click a sector to list its members; the organization name opens its page here, "LCI" its directory entry.</p>
     </figure>
   </section>
 
   <section id="p-projects" class="view" hidden>
-    <div class="grid2">
+    <div class="grid2 proj">
       <figure class="card">
         <figcaption>Projects described as lean on contractor websites</figcaption>
         <div class="map-wrap small"><svg id="proj-svg" viewBox="0 0 975 610" aria-label="Map of lean projects"></svg></div>
@@ -202,15 +209,15 @@
 </main>
 <footer class="site"><span id="foot"></span></footer>
 
-<script src="js/motion.js?v=4"></script>
-<script src="js/charts.js?v=4"></script>
-<script src="js/usmap.js?v=4"></script>
-<script src="js/landscape.js?v=4"></script>
-<script src="js/organizations.js?v=4"></script>
-<script src="js/methods.js?v=4"></script>
-<script src="js/owners.js?v=4"></script>
-<script src="js/projects.js?v=4"></script>
-<script src="js/datatab.js?v=4"></script>
-<script src="js/app.js?v=4"></script>
+<script src="js/motion.js?v=5"></script>
+<script src="js/charts.js?v=5"></script>
+<script src="js/usmap.js?v=5"></script>
+<script src="js/landscape.js?v=5"></script>
+<script src="js/organizations.js?v=5"></script>
+<script src="js/methods.js?v=5"></script>
+<script src="js/owners.js?v=5"></script>
+<script src="js/projects.js?v=5"></script>
+<script src="js/datatab.js?v=5"></script>
+<script src="js/app.js?v=5"></script>
 </body>
 </html>

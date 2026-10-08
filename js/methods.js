@@ -32,7 +32,7 @@ window.Methods = (function () {
     const head = pick.b ? `${m.names[pick.a]} and ${m.names[pick.b]}` : m.names[pick.a];
     el.innerHTML = `<h3>${head}: ${rows.length} organization${rows.length === 1 ? "" : "s"} <a href="#" id="meth-clear" class="muted">clear</a></h3>` +
       `<table><tr><th>Organization</th><th>Group</th><th>State</th><th class="num">Methods named</th></tr>` +
-      rows.map((d) => `<tr><td><a href="#organizations/${encodeURIComponent(d.id)}">${d.name}</a></td><td><span class="dot ${d.group}"></span>${G[d.group].name}</td><td>${d.state || ""}</td><td class="num">${d.methods.length}</td></tr>`).join("") + `</table>`;
+      rows.map((d) => `<tr><td><a href="#organizations/${encodeURIComponent(d.id)}">${d.name}</a></td><td><span class="dot ${d.group}"></span>${{ lci: "LCI", enr: "ENR, not LCI", fed: "Federal" }[d.group]}</td><td>${d.state || ""}</td><td class="num">${d.methods.length}</td></tr>`).join("") + `</table>`;
     $("meth-clear").addEventListener("click", (ev) => { ev.preventDefault(); pick = null; redraw(); });
   }
   function figFirst() {
@@ -47,6 +47,8 @@ window.Methods = (function () {
     document.querySelectorAll("#meth-groups .chip").forEach((c) => c.addEventListener("click", () => {
       c.classList.toggle("on"); if (c.classList.contains("on")) groupsOn.add(c.dataset.g); else groupsOn.delete(c.dataset.g); redraw();
     }));
+    const c0 = count(pool());
+    pick = { a: m.routines.slice().sort((x, y) => (c0[y] || 0) - (c0[x] || 0))[0] };   // start on the most named method
     redraw(); figFirst();
     C.onResize(() => { figMethods(); figCooc(); figFirst(); });
   }

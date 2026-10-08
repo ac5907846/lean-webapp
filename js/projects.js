@@ -19,7 +19,7 @@ window.Projects = (function () {
     const el = $("fig-projtypes"); el.innerHTML = "";
     [["building_type", "Building type"], ["owner_type", "Owner type"], ["delivery_method", "Delivery method"]].forEach(([k, name]) => {
       const box = document.createElement("div"); el.appendChild(box);
-      C.hbars(box, count(k), [{ key: "n", name, fill: TYPE_FILL, dark: TYPE_DARK }], { share: false, rowH: 13, gap: 5, left: 170, labelN: false });
+      C.hbars(box, count(k), [{ key: "n", name, fill: TYPE_FILL, dark: TYPE_DARK }], { share: false, rowH: 12, gap: 4, left: 170, labelN: false });
     });
   }
   function cards() {

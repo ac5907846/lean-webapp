@@ -22,7 +22,9 @@ nav.tabs a.on { background: var(--card); border-color: var(--line); color: var(-
 main { padding: 16px 24px 40px; max-width: 1440px; margin: 0 auto; }
 footer.site { padding: 12px 24px 28px; color: var(--muted); font-size: 12px; border-top: 1px solid var(--line); }
 
-.hero { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 16px; align-items: stretch; }
+.hero { display: grid; grid-template-columns: minmax(0, 1fr) 330px; gap: 16px; align-items: stretch; }
+.hero-side { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+.hero-side .readout { flex: 1; }
 .hero-map { background: var(--card); border: 1px solid var(--line); border-radius: 8px; padding: 8px; }
 .map-wrap { width: 100%; aspect-ratio: 975 / 610; position: relative; }
 .map-wrap.small { max-width: 100%; }
@@ -159,4 +161,33 @@ th.sortable .arr { font-size: 9px; margin-left: 2px; }
 .bignum.red .v { color: var(--lean3); }
 .grid2.tight { margin-top: 6px; gap: 12px; align-items: start; }
 #meth-groups { margin-bottom: 4px; }
-#meth-list h3 a { font-weight: normal; font-size: 12px; margin-left: 8px; }
+#meth-list h3 a { font-weight: normal; font-size: 12px; margin-left: 8px; }.steps { display: flex; flex-direction: column; gap: 4px; margin-top: 4px; }
+.steps .chip { text-align: left; border-radius: 6px; padding: 5px 10px; background: #fff; }
+.steps .chip.on { background: #dfe9e4; border-color: #9fbfb3; font-weight: 600; }
+.steps .pill { align-self: flex-start; margin-top: 4px; }
+.masonry { columns: 2; column-gap: 16px; margin-top: 16px; }
+.masonry .card { break-inside: avoid; display: inline-block; width: 100%; margin: 0 0 16px; }
+.grid2.cols { align-items: start; }
+.grid2.cols .col { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+#meth-list { max-height: 520px; overflow: auto; }
+#meth-list table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+#meth-list th, #meth-list td { text-align: left; padding: 4px 8px; border-bottom: 1px solid #efede6; }
+#meth-list td.num, #meth-list th.num { text-align: right; }
+.grid2.proj { grid-template-columns: 1.3fr 1fr; align-items: start; }
+.grid2.owners { grid-template-columns: 1fr 1.25fr; }
+.heat { border-collapse: collapse; width: 100%; font-size: 12px; }
+.heat th { font-weight: 600; text-align: right; padding: 4px 6px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+.heat th.r { text-align: left; font-weight: normal; }
+.heat td { text-align: right; padding: 4px 6px; border-bottom: 1px solid #efede6; font-variant-numeric: tabular-nums; }
+.heat td.r { text-align: left; white-space: nowrap; }
+.heat td .n { color: var(--muted); font-size: 11px; }
+#own-list table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+#own-list th, #own-list td { text-align: left; padding: 4px 8px; border-bottom: 1px solid #efede6; }
+@media (max-width: 1000px) { .masonry { columns: 1; } .grid2.proj, .grid2.owners { grid-template-columns: 1fr; } }.hero-side .bignum .v { font-size: 34px; }
+.hero-side .bignums { gap: 9px; }
+.hero-side .readout { padding: 14px 16px; gap: 8px; }
+.steps .chip { padding: 4px 10px; font-size: 12px; }
+.hero-map { display: flex; flex-direction: column; }
+.hero-map .map-wrap { flex: 1; min-height: 0; aspect-ratio: auto; }
+#meth-list td { white-space: nowrap; }
+@media (max-width: 1000px) { .hero-map .map-wrap { aspect-ratio: 975 / 610; flex: none; } }

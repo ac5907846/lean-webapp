@@ -149,7 +149,7 @@ window.Landscape = (function () {
     const rows = [["lci", "LCI members"], ["enr", "ENR Top 400, not LCI"], ["fed", "Federal builders"]].map(([g, label]) => ({
       label, n: gs[g].n, values: { any: gs[g].n ? gs[g].any_lean / gs[g].n : 0, method: gs[g].n ? gs[g].named_method / gs[g].n : 0 },
     }));
-    C.hbars($("fig-groups"), rows, [{ key: "any", name: "Lean language on the site", fill: "#ffe08a", dark: "#a07a00" }, { key: "method", name: "Names a lean routine", fill: "#f4a259", dark: "#a9491a" }], { rowH: 20, gap: 14 });
+    C.hbars($("fig-groups"), rows, [{ key: "any", name: "Lean language on the site", fill: "#ffe08a", dark: "#a07a00" }, { key: "method", name: "Names a lean routine", fill: "#f4a259", dark: "#a9491a" }], { rowH: 14, gap: 9, left: 118 });
   }
   function figCommit() {
     const years = d3.range(2008, 2027);
@@ -168,9 +168,7 @@ window.Landscape = (function () {
     b.querySelector(".legend").remove();
   }
   function figLci() {
-    const el = $("fig-lci"); el.innerHTML = "";
-    const a = document.createElement("div"), b = document.createElement("div");
-    el.appendChild(a); el.appendChild(b);
+    const a = $("fig-lci-types"), b = $("fig-lci-growth");
     const rows = lci.types.filter((t) => t.members >= 3).sort((x, y) => y.members - x.members).map((t) => ({ label: t.type_name, values: { m: t.members, c: t.lean_yes } }));
     C.hbars(a, rows, [{ key: "m", name: "Members", fill: "#8fd3c3", dark: "#0f6b5b" }, { key: "c", name: "Whose directory entry claims lean practice", fill: "#ffe08a", dark: "#a07a00" }], { share: false, rowH: 13, gap: 8, left: 250, labelN: false });
     // cohort area: organizations listed each year by the year first listed

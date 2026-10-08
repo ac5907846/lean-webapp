@@ -41,7 +41,7 @@ window.C = (function () {
         row.append("text").attr("x", x(v) + 4).attr("y", y0 + ki * rowH + rowH / 2 + 4).attr("fill", k.dark).text(share ? pct(v, pctDigits) : fmt(v));
       });
     });
-    const ax = d3.axisBottom(x).ticks(5).tickFormat(share ? (d) => pct(d) : fmt);
+    const ax = share ? d3.axisBottom(x).ticks(w < 420 ? 2 : 5).tickFormat((d) => pct(d)) : d3.axisBottom(x).ticks(Math.min(5, Math.ceil(x.domain()[1]))).tickFormat(d3.format("d"));
     s.append("g").attr("class", "axis").attr("transform", `translate(0,${H - 22})`).call(ax);
     legend(el, series);
   }
@@ -183,11 +183,27 @@ window.C = (function () {
     });
   }
 
+  // Heat table: rows = [{label, n, values: {key: share}, counts: {key: n}}], cols = [{key, name, color}]; the cell
+  // background scales with the share within the column's maximum.
+  function heatTable(el, rows, cols, { digits = 1 } = {}) {
+    const max = Object.fromEntries(cols.map((c) => [c.key, d3.max(rows, (r) => r.values[c.key] || 0) || 1]));
+    const mix = (color, t) => `color-mix(in srgb, ${color} ${Math.round(8 + 72 * t)}%, #fff)`;
+    el.innerHTML = `<table class="heat"><tr><th class="r"></th>${cols.map((c) => `<th title="${c.name}">${c.short || c.name}</th>`).join("")}</tr>` +
+      rows.map((r) => `<tr><td class="r">${r.label} <span class="n">n = ${fmt(r.n)}</span></td>${cols.map((c) => {
+        const v = r.values[c.key] || 0, k = r.counts ? r.counts[c.key] : null;
+        return `<td style="background:${v ? mix(c.color, v / max[c.key]) : "#fff"}" data-tip="${c.name}: ${k != null ? fmt(k) + " of " + fmt(r.n) + " (" : ""}${pct(v, v < .01 && v > 0 ? 2 : digits)}${k != null ? ")" : ""}">${pct(v, v < .01 && v > 0 ? 2 : digits)}</td>`;
+      }).join("")}</tr>`).join("") + "</table>";
+    el.querySelectorAll("td[data-tip]").forEach((td) => {
+      const label = td.parentElement.firstChild.firstChild.textContent;
+      td.addEventListener("mousemove", (ev) => showTip(ev, `<b>${label}</b>${td.dataset.tip}`)); td.addEventListener("mouseleave", hideTip);
+    });
+  }
+
   function wilson(k, n, z = 1.96) {
     if (!n) return [0, 0];
     const p = k / n, d = 1 + (z * z) / n, c = p + (z * z) / (2 * n), s = z * Math.sqrt((p * (1 - p)) / n + (z * z) / (4 * n * n));
     return [(c - s) / d, (c + s) / d];
   }
 
-  return { GROUP, LEVEL, hbars, stackedYears, dotInterval, lines, bubbleMatrix, smallMultiples, wilson, legend, showTip, moveTip, hideTip, onResize, pct, fmt };
+  return { GROUP, LEVEL, hbars, stackedYears, dotInterval, lines, bubbleMatrix, smallMultiples, heatTable, wilson, legend, showTip, moveTip, hideTip, onResize, pct, fmt };
 })();
