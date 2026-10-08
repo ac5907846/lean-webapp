@@ -191,3 +191,5 @@ th.sortable .arr { font-size: 9px; margin-left: 2px; }
 .hero-map .map-wrap { flex: 1; min-height: 0; aspect-ratio: auto; }
 #meth-list td { white-space: nowrap; }
 @media (max-width: 1000px) { .hero-map .map-wrap { aspect-ratio: 975 / 610; flex: none; } }
+.smbox { border: 1px solid var(--line); border-radius: 6px; padding: 6px 8px 4px; background: #fff; min-width: 0; }
+.smbox svg { display: block; max-width: 100%; }

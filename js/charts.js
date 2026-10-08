@@ -164,22 +164,30 @@ window.C = (function () {
   }
 
   // Small multiples: bars of counts by year for several keys
-  function smallMultiples(el, items, years, { cols = 4, h = 90, w0 = null } = {}) {
+  // Each item sits in its own bordered box; hovering anywhere in a year column shows the count, and the column is
+  // highlighted, so low bars are as easy to read as tall ones.
+  function smallMultiples(el, items, years, { cols = 4, h = 100, w0 = null } = {}) {
     el.innerHTML = "";
-    const W = w0 || width(el), cw = Math.floor(W / cols) - 8;
-    const wrap = d3.select(el).append("div").style("display", "grid").style("grid-template-columns", `repeat(${cols}, 1fr)`).style("gap", "8px");
+    const W = w0 || width(el), gap = 10, pad = 8, cw = Math.floor((W - gap * (cols - 1)) / cols) - 2 * pad - 2;
+    const wrap = d3.select(el).append("div").style("display", "grid").style("grid-template-columns", `repeat(${cols}, 1fr)`).style("gap", gap + "px");
     const ymax = d3.max(items, (it) => d3.max(years, (y) => it.values[y] || 0)) || 1;
     items.forEach((it) => {
-      const s = wrap.append("svg").attr("width", cw).attr("height", h).attr("viewBox", `0 0 ${cw} ${h}`);
-      const x = d3.scaleBand().domain(years).range([4, cw - 4]).padding(0.15);
-      const y = d3.scaleLinear().domain([0, ymax]).range([h - 18, 16]);
-      s.append("text").attr("x", 4).attr("y", 11).attr("font-size", 11).attr("font-weight", 600).text(`${it.name} (${it.total})`);
+      const box = wrap.append("div").attr("class", "smbox");
+      const s = box.append("svg").attr("width", cw).attr("height", h).attr("viewBox", `0 0 ${cw} ${h}`);
+      const x = d3.scaleBand().domain(years).range([2, cw - 2]).padding(0.15);
+      const y = d3.scaleLinear().domain([0, ymax]).range([h - 18, 18]);
+      s.append("text").attr("x", 2).attr("y", 11).attr("font-size", 11).attr("font-weight", 600).text(`${it.name} (${it.total})`);
+      const val = s.append("text").attr("x", cw - 2).attr("y", 11).attr("text-anchor", "end").attr("font-size", 10.5).attr("fill", "#a9491a");
       years.forEach((yr) => {
         const v = it.values[yr] || 0;
-        s.append("rect").attr("x", x(yr)).attr("width", x.bandwidth()).attr("y", y(v)).attr("height", y(0) - y(v)).attr("fill", v ? "#f4a259" : "#eee").attr("stroke", v ? "#a9491a" : "none")
-          .on("mousemove", (ev) => showTip(ev, `<b>${it.name}</b>${yr}: ${v} organizations first name it`)).on("mouseleave", hideTip);
+        const col = s.append("g");
+        const hit = col.append("rect").attr("x", x(yr) - 1).attr("width", x.bandwidth() + 2).attr("y", 14).attr("height", h - 14 - 10).attr("fill", "transparent");
+        col.append("rect").attr("x", x(yr)).attr("width", x.bandwidth()).attr("y", y(v)).attr("height", Math.max(v ? 2 : 1, y(0) - y(v))).attr("fill", v ? "#f4a259" : "#eee").attr("stroke", v ? "#a9491a" : "none").attr("pointer-events", "none");
+        hit.on("mousemove", (ev) => { hit.attr("fill", "rgba(0,0,0,.05)"); val.text(`${yr}: ${v}`); showTip(ev, `<b>${it.name}</b>${yr}: ${v} organization${v === 1 ? "" : "s"} first name it`); })
+           .on("mouseleave", () => { hit.attr("fill", "transparent"); val.text(""); hideTip(); });
       });
-      [years[0], years[Math.floor(years.length / 2)], years[years.length - 1]].forEach((yr) => s.append("text").attr("x", x(yr) + x.bandwidth() / 2).attr("y", h - 5).attr("text-anchor", "middle").attr("font-size", 9).attr("fill", "#777").text(yr));
+      s.append("line").attr("x1", 2).attr("x2", cw - 2).attr("y1", y(0) + .5).attr("y2", y(0) + .5).attr("stroke", "#d9d6cc");
+      years.filter((yr) => yr % 3 === 2).forEach((yr) => s.append("text").attr("x", x(yr) + x.bandwidth() / 2).attr("y", h - 5).attr("text-anchor", "middle").attr("font-size", 9).attr("fill", "#777").text(yr));
     });
   }
 
