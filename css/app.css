@@ -154,7 +154,7 @@ th.sortable .arr { font-size: 9px; margin-left: 2px; }
 .chip[data-t]::before { content: ""; display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--c); margin-right: 6px; vertical-align: 1px; }
 .controls { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px 16px; margin-bottom: 6px; }
 .intro h2 { font-family: var(--serif); font-weight: normal; font-size: 22px; margin: 2px 0 6px; }
-.intro p { max-width: 900px; font-size: 13.5px; line-height: 1.5; margin: 0 0 12px; }
+.intro p { font-size: 13.5px; line-height: 1.5; margin: 0 0 12px; }
 .bignums.row { flex-direction: row; flex-wrap: wrap; gap: 14px 32px; }
 .bignums.row .bignum { max-width: 220px; }
 .bignums.row .bignum .v { font-size: 34px; }
