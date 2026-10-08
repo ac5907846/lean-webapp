@@ -72,7 +72,7 @@ window.DataTab = (function () {
 
   function figure() {
     const st = stages(), el = $("pipe-fig"); el.innerHTML = "";
-    const W = Math.max(1000, el.getBoundingClientRect().width), n = st.length, gap = 28, pad = 10, ph = 30, pg = 6, head = 34;
+    const W = Math.max(1000, el.getBoundingClientRect().width), n = st.length, gap = 28, pad = 10, ph = 34, pg = 6, head = 34;
     const sw = (W - gap * (n - 1)) / n, H = head + pad + 7 * (ph + pg) + 6;
     const s = d3.select(el).append("svg").attr("width", W).attr("height", H).attr("viewBox", `0 0 ${W} ${H}`);
     s.append("defs").append("marker").attr("id", "arr").attr("viewBox", "0 0 10 10").attr("refX", 9).attr("refY", 5).attr("markerWidth", 7).attr("markerHeight", 7).attr("orient", "auto").append("path").attr("d", "M0 0L10 5L0 10z").attr("fill", EDGE);
@@ -88,8 +88,8 @@ window.DataTab = (function () {
           .on("mousemove", (ev) => C.showTip(ev, `<b>${p.l}</b>${p.tip}`)).on("mouseleave", C.hideTip);
         pl.append("rect").attr("width", sw - 2 * pad).attr("height", ph).attr("rx", 5).attr("fill", PAL[stg.kind]).attr("stroke", "#c9c6bb");
         const gl = pl.append("g").attr("transform", `translate(7,${(ph - 14) / 2})`); GLYPH[p.g](gl);
-        pl.append("text").attr("x", 27).attr("y", 13).attr("font-size", 10.5).text(p.l);
-        pl.append("text").attr("x", 27).attr("y", 25).attr("font-size", 10.5).attr("font-weight", 700).text(p.v);
+        pl.append("text").attr("x", 27).attr("y", 13.5).attr("font-size", 10.5).text(p.l);
+        pl.append("text").attr("x", 27).attr("y", 28).attr("font-size", 10.5).attr("font-weight", 700).text(p.v);
       });
       if (i < n - 1) s.append("line").attr("x1", x0 + sw + 2).attr("x2", x0 + sw + gap - 2).attr("y1", head + 30).attr("y2", head + 30).attr("stroke", EDGE).attr("stroke-width", 1.3).attr("marker-end", "url(#arr)");
     });
