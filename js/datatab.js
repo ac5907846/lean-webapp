@@ -137,7 +137,7 @@ window.DataTab = (function () {
 <li>Page texts are third-party copyright: this site shows coded measures, links to the archived pages, and short verified quotes only. Page links open the Wayback Machine (for pages read from Common Crawl, whose records are not browsable, the Wayback capture closest to that year, when one exists) and the current page.</li>
 <li>${f(m.pages)} panel pages coded: level 0 ${f(m.levels_pages[0])}, level 1 ${f(m.levels_pages[1])}, level 2 ${f(m.levels_pages[2])}, level 3 ${f(m.levels_pages[3])}.</li>
 </ul></details>
-<p class="fine">Data built ${S.built}. Companion site to two papers in preparation (a conference paper on the landscape; a journal paper on selection and diffusion).</p>`;
+<p class="fine">Data built ${S.built}.</p>`;
     figure(); detail();
     C.onResize(figure);
   }
