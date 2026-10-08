@@ -340,6 +340,29 @@ def projects():
     return {"records": records(p, cols), "pages_read": 279, "firms_read": 6, "note": "voted by three local language models; a hand check of the records is pending"}
 
 
+def raw_sizes():
+    """bytes and files of every raw source folder used by the papers (OSHA is parked; run logs are not data)"""
+    import os
+    out = {}
+    for d in sorted(core.RAW.iterdir()):
+        if not d.is_dir() or d.name.startswith("_") or d.name == "osha_ita":
+            continue
+        n = b = 0
+        sub = {}
+        for root, dirs, files in os.walk(d):
+            top = os.path.relpath(root, d).split(os.sep)[0]
+            for f in files:
+                try:
+                    s = os.stat(os.path.join(root, f)).st_size
+                except OSError:
+                    continue
+                n += 1; b += s
+                if top != ".":
+                    sub.setdefault(top, [0, 0]); sub[top][0] += 1; sub[top][1] += s
+        out[d.name] = {"files": n, "bytes": b, "sub": {k: {"files": v[0], "bytes": v[1]} for k, v in sub.items()} if d.name == "web_archive" else {}}
+    return out
+
+
 def main():
     OUT.mkdir(exist_ok=True)
     o = orgs()
@@ -371,7 +394,9 @@ def main():
         "states": len({r.get("state") for r in o if r.get("state")}),
         "lci_members": l["members_total"], "enr_firms": e["firms"], "enr_lci_2026": e["lci_2026"], "enr_lci_ever": e["lci_ever"],
         "solicitations": fd["total_solicitations"], "lean_solicitations": len(fd["lean_solicitations"]),
-        "projects": len(pr["records"]),
+        "projects": len(pr["records"]), "project_pages": int(pd.read_parquet(core.out("p1_lean_pages.parquet"), columns=["domain"]).shape[0]),
+        "awards_usable": int(pd.read_parquet(core.out("awards_usable.parquet"), columns=["firm"]).shape[0]), "awards_panel": allc["awards"],
+        "sizes": raw_sizes(), "site_bytes": int(sum(p.stat().st_size for p in OUT.glob("*.json"))),
         "group_stats": {g: {"n": sum(1 for r in observed if r["group"] == g),
                             "any_lean": sum(1 for r in observed if r["group"] == g and (r.get("level") or 0) >= 1),
                             "named_method": sum(1 for r in observed if r["group"] == g and (r.get("level") or 0) >= 2),

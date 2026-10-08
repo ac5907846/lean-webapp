@@ -200,3 +200,10 @@ th.sortable .arr { font-size: 9px; margin-left: 2px; }
 .heat td.r { line-height: 1.15; }
 .heat td .n { display: block; }
 .mapplay { position: absolute; top: 8px; right: 8px; z-index: 2; box-shadow: 0 1px 3px rgba(0,0,0,.08); }
+.prose { max-width: none; }
+.pipe-wrap { overflow-x: auto; margin: 6px 0 8px; }
+.pipe-detail { background: #fbfaf4; border: 1px solid var(--line); border-radius: 8px; padding: 8px 14px; margin-bottom: 8px; max-width: 980px; }
+.pipe-detail h3 { margin: 4px 0 4px; font-size: 13px; }
+.pipe-detail p { margin: 0 0 4px; font-size: 13px; line-height: 1.5; }
+.prose details { margin: 8px 0; max-width: 980px; }
+.prose summary { cursor: pointer; font-family: var(--serif); font-size: 18px; padding: 4px 0; }
