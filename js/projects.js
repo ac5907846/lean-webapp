@@ -28,7 +28,7 @@ window.Projects = (function () {
       <div>${[r.building_type, r.owner_type !== "unknown" ? "owner: " + (r.owner || r.owner_type) : null, r.delivery_method !== "unknown" ? r.delivery_method : null, r.designer ? "designer: " + r.designer : null, r.value_usd_millions ? "$" + r.value_usd_millions + " million" : null].filter(Boolean).join(" \u00b7 ")}</div>
       ${r.lean_methods ? `<div class="tags" style="margin-top:6px">${r.lean_methods.split(";").map((m) => `<span class="tag spec">${m.trim()}</span>`).join("")}</div>` : ""}
       ${r.quote ? `<blockquote>${r.quote}</blockquote>` : ""}
-      <div class="src">${r.domain}, archived ${r.year}${r.quote_verified ? " \u00b7 quote checked against the page" : ""}</div></div>`).join("");
+      <div class="src">${r.domain}, archived ${r.year}${r.quote_verified ? " \u00b7 quote checked against the page" : ""} \u00b7 <a href="${r.link}${r.anchor || ""}" target="_blank" rel="noopener">source page, quote highlighted</a> \u00b7 <a href="${r.url}${r.anchor || ""}" target="_blank" rel="noopener">live</a></div></div>`).join("");
   }
   function init(data) {
     p = data.projects;

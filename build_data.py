@@ -91,6 +91,9 @@ def usaspending_link(uei, name):
     return f"https://www.usaspending.gov/keyword_search/{str(name).replace(' ', '%20')}" if isinstance(name, str) and name else None
 
 
+from lean_dictionary import norm_url   # the same normalization as the page evidence
+
+
 def archive_link(src, ts, url, year=None):
     if src == "wayback":
         return f"https://web.archive.org/web/{ts}/{url}"
@@ -335,8 +338,23 @@ def projects():
     pt = {(r.USPS, r.key): (float(r.INTPTLAT), float(r.INTPTLONG)) for r in pl.itertuples()}
     p["lat"] = [pt.get((r.state, place_key(r.city)), (None, None))[0] if isinstance(r.city, str) and isinstance(r.state, str) else None for r in p.itertuples()]
     p["lon"] = [pt.get((r.state, place_key(r.city)), (None, None))[1] if isinstance(r.city, str) and isinstance(r.state, str) else None for r in p.itertuples()]
+    # the source page: the archived copy (Wayback capture of that page, else the Wayback capture closest to the year) and
+    # the live address; the quote becomes a text fragment so the browser opens the page at the quoted passage
+    from urllib.parse import quote as _q
+    ev = pd.read_parquet(core.out("lcp_page_evidence.parquet"), columns=["source", "timestamp", "url", "url_norm"])
+    ts = {r.url_norm: str(r.timestamp) for r in ev[ev.source == "wayback"].sort_values("timestamp").itertuples()}
+    src = p.source if "source" in p.columns else pd.Series(["commoncrawl"] * len(p), index=p.index)
+    p["link"] = [archive_link("wayback", ts[norm_url(r.url)], r.url) if norm_url(r.url) in ts else archive_link("commoncrawl", None, r.url, int(r.year))
+                 for r in p.itertuples()]
+    def fragment(q):
+        if not isinstance(q, str) or len(q.split()) < 4:
+            return ""
+        w = q.split()
+        return "#:~:text=" + (_q(" ".join(w[:6]), safe="") + "," + _q(" ".join(w[-4:]), safe="") if len(w) > 12 else _q(q, safe=""))
+    p["anchor"] = [fragment(q) for q in p.quote]
+    p["source"] = src.values
     cols = ["project_name", "firm", "domain", "city", "state", "country", "lat", "lon", "building_type", "owner_type", "owner", "designer", "delivery_method",
-            "value_usd_millions", "size_sqft", "completion_year", "lean_methods", "quote", "quote_verified", "year", "url"]
+            "value_usd_millions", "size_sqft", "completion_year", "lean_methods", "quote", "quote_verified", "year", "url", "source", "link", "anchor"]
     return {"records": records(p, cols), "pages_read": 279, "firms_read": 6, "note": "voted by three local language models; a hand check of the records is pending"}
 
 
