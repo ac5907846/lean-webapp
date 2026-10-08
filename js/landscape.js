@@ -35,7 +35,7 @@ window.Landscape = (function () {
   }
   let M_NAMES = {};
 
-  function draw(ms = 500) {
+  function draw(ms = 300) {
     map.update(orgs, style, { ms, tip: tipHtml, onClick: (d) => { location.hash = "#organizations/" + encodeURIComponent(d.id); } });
   }
 
@@ -47,7 +47,7 @@ window.Landscape = (function () {
       if (!el) { el = document.createElement("div"); el.className = "bignum"; el.innerHTML = '<div class="v"></div><div class="l"></div>'; box.appendChild(el); }
       el.className = "bignum " + (n.cls || "");
       const lab = el.querySelector(".l"), same = lab.textContent === n.l;   // a new quantity counts from 0, the same one carries
-      M.countTo(el.querySelector(".v"), n.v, { suffix: n.suffix || "", decimals: n.d || 0, raw: !!n.raw, ms: n.raw ? 0 : 700, from: same ? null : 0 });
+      M.countTo(el.querySelector(".v"), n.v, { suffix: n.suffix || "", decimals: n.d || 0, raw: !!n.raw, ms: n.raw ? 0 : 450, from: same ? null : 0 });
       lab.textContent = n.l;
     });
     while (box.children.length > nums.length) box.removeChild(box.lastChild);
@@ -112,7 +112,7 @@ window.Landscape = (function () {
     setMode("year");
     clearInterval(yearTimer);
     const run = (y) => {
-      year = y; $("hero-year").value = y; $("hero-year-val").textContent = y; draw(250);
+      year = y; $("hero-year").value = y; $("hero-year-val").textContent = y; draw(180);
       const dated = orgs.filter((d) => groupsOn.has(d.group) && d.panel && d.commit_year != null && d.commit_year <= y).length;
       const seen = orgs.filter((d) => groupsOn.has(d.group) && d.panel && d.first_observed != null && d.first_observed <= y).length;
       readout("First documented commitment", [
@@ -122,7 +122,7 @@ window.Landscape = (function () {
     };
     if (animate && !M.reduced) {
       let y = 2008; run(y);
-      yearTimer = setInterval(() => { y += 1; if (y > 2026) { clearInterval(yearTimer); return; } run(y); }, 650);
+      yearTimer = setInterval(() => { y += 1; if (y > 2026) { clearInterval(yearTimer); return; } run(y); }, 280);
     } else run(year);
   }
 
@@ -138,8 +138,8 @@ window.Landscape = (function () {
     $("hero-year").addEventListener("input", (ev) => { clearInterval(yearTimer); year = +ev.target.value; stepYear(false); });
     tour = M.tour({
       steps: [
-        { ms: 5000, enter: stepAll }, { ms: 5000, enter: stepObserved }, { ms: 6000, enter: stepLean }, { ms: 6000, enter: stepMethod },
-        { ms: 14500, enter: () => stepYear(true) },
+        { ms: 2600, enter: stepAll }, { ms: 2600, enter: stepObserved }, { ms: 3000, enter: stepLean }, { ms: 3000, enter: stepMethod },
+        { ms: 6400, enter: () => stepYear(true) },
       ],
       button: $("hero-play"), onPause: () => clearInterval(yearTimer), loop: true,
     });

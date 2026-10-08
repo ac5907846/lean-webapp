@@ -6,7 +6,7 @@ window.M = (function () {
   const fmt = (v, d, raw) => (raw ? String(Math.round(v)) : d ? v.toFixed(d) : Math.round(v).toLocaleString("en-US"));
   const current = new WeakMap();
 
-  function countTo(el, value, { decimals = 0, suffix = "", ms = 700, raw = false, from = null } = {}) {
+  function countTo(el, value, { decimals = 0, suffix = "", ms = 450, raw = false, from = null } = {}) {
     if (from == null) from = current.get(el) ?? 0;
     current.set(el, value);
     if (reduced || ms === 0 || from === value) { el.textContent = fmt(value, decimals, raw) + suffix; return; }

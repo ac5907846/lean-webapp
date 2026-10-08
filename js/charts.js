@@ -37,7 +37,7 @@ window.C = (function () {
         const v = r.values[k.key] || 0;
         row.append("rect").attr("x", left).attr("y", y0 + ki * rowH + 2).attr("height", rowH - 4).attr("width", 0).attr("fill", k.fill).attr("stroke", k.dark)
           .on("mousemove", (ev) => showTip(ev, `<b>${r.label}</b>${k.name}: ${share ? pct(v, 1) : fmt(v)}${r.n != null && share ? (tipN ? ` (${fmt(r.n)})` : ` of ${fmt(r.n)}`) : ""}${onClick ? "<br><i>click to select</i>" : ""}`)).on("mouseleave", hideTip)
-          .transition().duration(M.reduced ? 0 : 600).attr("width", Math.max(0, x(v) - left));
+          .transition().duration(M.reduced ? 0 : 350).attr("width", Math.max(0, x(v) - left));
         row.append("text").attr("x", x(v) + 4).attr("y", y0 + ki * rowH + rowH / 2 + 4).attr("fill", k.dark).text(share ? pct(v, pctDigits) : fmt(v));
       });
     });
@@ -107,7 +107,7 @@ window.C = (function () {
   // they do not overlap.
   function lines(el, series, { h = 300, log = false, yLabel = "", yFmt = null, tip = null, ymax = null } = {}) {
     const { s, w } = svg(el, h);
-    const m = { l: 48, r: 170, t: 12, b: 28 };
+    const m = { l: 48, r: 215, t: 12, b: 28 };
     const xs = series.flatMap((k) => k.values.map((v) => v.x));
     const x = d3.scaleLinear().domain(d3.extent(xs)).range([m.l, w - m.r]);
     const top = ymax || d3.max(series, (k) => d3.max(k.values, (v) => v.y)) || 1;
@@ -115,14 +115,19 @@ window.C = (function () {
     const line = d3.line().x((v) => x(v.x)).y((v) => y(v.y));
     const f = yFmt || fmt;
     // end labels: sort by the last value and push apart by 12 px
+    // end labels: sorted by the last value, pushed apart by 12 px, and kept above the x axis (so none sits on the
+    // last tick label) and below the top
     const ends = series.map((k) => ({ k, yy: y(k.values[k.values.length - 1].y) })).sort((a, b) => a.yy - b.yy);
+    const floor = h - m.b - 8;
+    for (let i = ends.length - 1; i >= 0; i--) ends[i].yy = Math.min(ends[i].yy, floor - 12 * (ends.length - 1 - i));
+    for (let i = 0; i < ends.length; i++) ends[i].yy = Math.max(ends[i].yy, m.t + 4 + 12 * i);
     for (let i = 1; i < ends.length; i++) if (ends[i].yy - ends[i - 1].yy < 12) ends[i].yy = ends[i - 1].yy + 12;
     series.forEach((k) => {
       s.append("path").datum(k.values).attr("d", line).attr("fill", "none").attr("stroke", k.color).attr("stroke-width", k.width || 1.8);
       s.selectAll(null).data(k.values).enter().append("circle").attr("cx", (v) => x(v.x)).attr("cy", (v) => y(v.y)).attr("r", (v) => (k.big && v.y > 0 ? 6 : 3)).attr("fill", k.color).attr("stroke", "#fff")
         .on("mousemove", (ev, v) => showTip(ev, tip ? tip(k, v) : `<b>FY${v.x}</b>${k.name}: ${f(v.y)}${v.of ? ` of ${fmt(v.of)}` : ""}`)).on("mouseleave", hideTip);
       const last = k.values[k.values.length - 1], e = ends.find((q) => q.k === k);
-      s.append("text").attr("x", x(last.x) + 8).attr("y", e.yy + 4).attr("fill", k.color).attr("font-size", 11).text(k.name);
+      s.append("text").attr("x", x(last.x) + 8).attr("y", e.yy + 4).attr("fill", k.color).attr("font-size", 10.5).text(k.name);
     });
     s.append("g").attr("class", "axis").attr("transform", `translate(0,${h - m.b})`).call(d3.axisBottom(x).ticks(9).tickFormat((d) => d));
     s.append("g").attr("class", "axis").attr("transform", `translate(${m.l},0)`).call(log ? d3.axisLeft(y).tickValues([0, 1, 3, 10, 30, 100, 300, 1000, 3000]).tickFormat(f) : d3.axisLeft(y).ticks(6).tickFormat(f));

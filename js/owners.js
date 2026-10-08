@@ -26,7 +26,7 @@ window.Owners = (function () {
     const box = $("own-nums"); box.innerHTML = "";
     nums.forEach((n) => {
       const el = document.createElement("div"); el.className = "bignum " + (n.cls || ""); el.innerHTML = '<div class="v"></div><div class="l"></div>'; box.appendChild(el);
-      M.countTo(el.querySelector(".v"), n.v, { suffix: n.suffix || "", decimals: n.d || 0, ms: 900 });
+      M.countTo(el.querySelector(".v"), n.v, { suffix: n.suffix || "", decimals: n.d || 0, ms: 600 });
       el.querySelector(".l").textContent = n.l;
     });
   }
