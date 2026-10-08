@@ -5,10 +5,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Lean construction landscape</title>
 <meta name="description" content="Reproducible public-data landscape of lean construction in the United States: which organizations document lean on their websites and since when, where they are, which methods they name, and what the federal owner asks for.">
-<link rel="preload" href="data/summary.json?v=2" as="fetch" crossorigin>
-<link rel="preload" href="data/orgs.json?v=2" as="fetch" crossorigin>
-<link rel="preload" href="data/us-states.json?v=2" as="fetch" crossorigin>
-<link rel="stylesheet" href="css/app.css?v=2">
+<link rel="preload" href="data/summary.json?v=3" as="fetch" crossorigin>
+<link rel="preload" href="data/orgs.json?v=3" as="fetch" crossorigin>
+<link rel="preload" href="data/us-states.json?v=3" as="fetch" crossorigin>
+<link rel="stylesheet" href="css/app.css?v=3">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/topojson/3.0.2/topojson.min.js"></script>
 </head>
@@ -116,58 +116,69 @@
   </section>
 
   <section id="p-methods" class="view" hidden>
+    <div class="chips" id="meth-groups">
+      <button class="chip on lci" data-g="lci">LCI members</button>
+      <button class="chip on enr" data-g="enr">ENR Top 400, not LCI</button>
+      <button class="chip on fed" data-g="fed">Federal builders</button>
+    </div>
     <div class="grid2">
       <figure class="card">
         <figcaption>Lean methods named on websites, organizations per method</figcaption>
-        <div class="chips" id="meth-scope">
-          <button class="chip on" data-s="frame">All organizations read</button>
-          <button class="chip" data-s="panel">Panel (federal builders, 2008 to 2026)</button>
-        </div>
         <div id="fig-methods"></div>
-        <p class="fine">Specific routines name lean construction practice on their own; generic tools count only on a page that also has lean language or a specific routine. Pages with the term, not pages about it.</p>
+        <p class="fine">Any archived page of the organization, 2008 to 2026. Specific routines name lean construction practice on their own; generic tools count only on a page that also has lean language or a specific routine. Click a method to list the organizations.</p>
       </figure>
       <figure class="card">
         <figcaption>Methods named together by the same organization</figcaption>
         <div id="fig-cooc"></div>
-        <p class="fine">Panel organizations with lean language: number that name both methods anywhere on the archived site.</p>
+        <p class="fine">Diagonal: organizations naming the method; off the diagonal: organizations naming both. Methods named by 3 or more organizations in the chosen groups. Click a circle to list them.</p>
       </figure>
     </div>
+    <div class="card" id="meth-list"></div>
     <figure class="card">
-      <figcaption>Year a method is first named, by organization (panel)</figcaption>
+      <figcaption>Year a method is first named, by organization (federal builders of the panel, 2008 to 2026)</figcaption>
       <div id="fig-firstyear"></div>
-      <p class="fine">First archived year in which each organization's site names the method. Archive coverage is thin before 2013 and uneven after; a first year is an upper bound on when the method was first named.</p>
+      <p class="fine">First archived year in which each organization’s site names the method. Archive coverage is thin before 2013 and uneven after; a first year is an upper bound on when the method was first named.</p>
     </figure>
   </section>
 
   <section id="p-owners" class="view" hidden>
-    <div class="grid2">
-      <figure class="card wide">
-        <figcaption>Federal construction solicitations naming a delivery method or a lean method, by fiscal year</figcaption>
-        <div class="chips" id="fed-scale"><button class="chip on" data-s="log">Log scale</button><button class="chip" data-s="linear">Linear</button></div>
-        <div id="fig-fed"></div>
-        <p class="fine">SAM.gov Contract Opportunities, construction notices (NAICS 23 and construction classification codes), FY2008 to FY2026; distinct solicitations with a full text. Lean methods: Last Planner, pull planning, target value design, Big Room, takt, choosing by advantages, Lean Construction Institute, lean construction.</p>
-      </figure>
-      <figure class="card">
-        <figcaption>The solicitations that name a lean method</figcaption>
-        <div id="fed-cases"></div>
-      </figure>
+    <div class="card intro">
+      <h2>Do owners ask for lean?</h2>
+      <p>Owners are the organizations that can require lean on their projects. The largest public owner in the United States is the federal government, whose construction solicitations are public with their full text. This view reads what those solicitations ask for, shows the only notices that name a lean method, how the awards of the panel firms are written, and which private and public owners have joined the Lean Construction Institute.</p>
+      <div class="bignums row" id="own-nums"></div>
     </div>
+    <figure class="card">
+      <figcaption>What federal construction solicitations ask for, by fiscal year</figcaption>
+      <div class="controls">
+        <div class="chips" id="fed-terms"></div>
+        <div class="chips" id="fed-scale"><button class="chip on" data-s="share">Share of solicitations</button><button class="chip" data-s="count">Count</button></div>
+      </div>
+      <div id="fig-fed"></div>
+      <p class="fine">SAM.gov Contract Opportunities, construction notices (NAICS 23 and construction classification codes), FY2008 to FY2026; distinct solicitations with a full text. A term counts when the notice text names it. Lean methods: Last Planner, pull planning, target value design, Big Room, takt, choosing by advantages, Lean Construction Institute, lean construction. Pick the terms above; hover a point for the counts.</p>
+    </figure>
     <div class="grid2">
       <figure class="card">
-        <figcaption>Contract types in the usable federal construction awards of the panel firms</figcaption>
-        <div id="fig-contracts"></div>
-        <p class="fine">USAspending prime contract awards, NAICS 23, with corrected definitions and nine restrictions (153,355 usable awards, FY2008 to FY2026); here the awards of the 444 panel firms. Pricing type, extent of competition and kind of work as recorded in FPDS.</p>
-      </figure>
-      <figure class="card">
-        <figcaption>Delivery terms by department (solicitations, FY2008 to FY2026)</figcaption>
+        <figcaption>The same terms by department, FY2008 to FY2026</figcaption>
         <div id="fig-dep"></div>
+        <p class="fine">Share of each department’s solicitations naming the term; the ten departments with the most construction solicitations.</p>
       </figure>
       <figure class="card">
-        <figcaption>Owners in the LCI directory</figcaption>
-        <div id="fig-owners"></div>
-        <p class="fine">Owner members of the Lean Construction Institute, 2026, by sector; owners are the organizations that can require lean on their projects.</p>
+        <figcaption>The only solicitations that name a lean method</figcaption>
+        <div id="fed-cases"></div>
+        <p class="fine">Two notices in nineteen fiscal years: a lean requirement is almost never written into a federal construction solicitation. Lean enters federal projects through the contractor, not the owner’s notice.</p>
       </figure>
     </div>
+    <figure class="card">
+      <figcaption>How the panel firms’ federal construction awards are written</figcaption>
+      <div class="chips" id="ct-dim"><button class="chip on" data-d="compete">Extent of competition</button><button class="chip" data-d="pricing">Pricing type</button><button class="chip" data-d="work">Kind of work</button></div>
+      <div class="grid2 tight"><div id="fig-contracts"></div><div id="fig-ct-year"></div></div>
+      <p class="fine">USAspending prime contract awards, NAICS 23, with corrected definitions (153,355 usable awards, FY2008 to FY2026); here the awards of the 444 panel firms. Pricing type, extent of competition and kind of work as recorded in FPDS; set-aside = awarded after exclusion of sources (small business and similar programs). Right: the share by fiscal year (years with 30 or more awards).</p>
+    </figure>
+    <figure class="card">
+      <figcaption>Owners that joined the Lean Construction Institute, 2026</figcaption>
+      <div class="grid2 tight"><div id="fig-owners"></div><div id="own-list"></div></div>
+      <p class="fine">Owner members of the LCI corporate directory by sector. Click a sector to list its members; the organization name opens its page here, "LCI" its directory entry.</p>
+    </figure>
   </section>
 
   <section id="p-projects" class="view" hidden>
@@ -191,15 +202,15 @@
 </main>
 <footer class="site"><span id="foot"></span></footer>
 
-<script src="js/motion.js?v=2"></script>
-<script src="js/charts.js?v=2"></script>
-<script src="js/usmap.js?v=2"></script>
-<script src="js/landscape.js?v=2"></script>
-<script src="js/organizations.js?v=2"></script>
-<script src="js/methods.js?v=2"></script>
-<script src="js/owners.js?v=2"></script>
-<script src="js/projects.js?v=2"></script>
-<script src="js/datatab.js?v=2"></script>
-<script src="js/app.js?v=2"></script>
+<script src="js/motion.js?v=3"></script>
+<script src="js/charts.js?v=3"></script>
+<script src="js/usmap.js?v=3"></script>
+<script src="js/landscape.js?v=3"></script>
+<script src="js/organizations.js?v=3"></script>
+<script src="js/methods.js?v=3"></script>
+<script src="js/owners.js?v=3"></script>
+<script src="js/projects.js?v=3"></script>
+<script src="js/datatab.js?v=3"></script>
+<script src="js/app.js?v=3"></script>
 </body>
 </html>

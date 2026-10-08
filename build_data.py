@@ -76,6 +76,21 @@ def norm_name(n):
     return re.sub(r"[^a-z0-9]+", " ", str(n).lower()).replace(" llc", "").replace(" inc", "").replace(" the ", " ").strip()
 
 
+# SAM.gov has no stable public address for an entity record (2026-10-08: its entity routes return 404 outside a session), so
+# a contractor links to its USAspending recipient profile, resolved from the UEI by 00_code/x16 into the raw data folder.
+_RID = None
+
+
+def usaspending_link(uei, name):
+    global _RID
+    if _RID is None:
+        p = core.RAW / "usaspending" / "recipient_ids.csv"
+        _RID = pd.read_csv(p, dtype=str).dropna(subset=["recipient_id"]).set_index("uei").recipient_id.to_dict() if p.exists() else {}
+    if uei and uei in _RID:
+        return f"https://www.usaspending.gov/recipient/{_RID[uei]}/latest"
+    return f"https://www.usaspending.gov/keyword_search/{str(name).replace(' ', '%20')}" if isinstance(name, str) and name else None
+
+
 def archive_link(src, ts, url, year=None):
     if src == "wayback":
         return f"https://web.archive.org/web/{ts}/{url}"
@@ -165,8 +180,7 @@ def orgs():
             "website": f"https://{d}/" if d else None,
             "lci": f"https://leanconstruction.org/sponsors/{lk.slug}/" if lk is not None else None,
             "enr": ENR_SOURCE if r.in_enr else None,
-            "sam": f"https://sam.gov/entity/{uei}/coreData" if uei else None,
-            "usaspending": f"https://www.usaspending.gov/keyword_search/{str(r.name).replace(' ', '%20')}" if r.in_federal else None,
+            "usaspending": usaspending_link(uei, r.name if r.in_federal else None),
         }.items() if v}
         rows.append({
             "id": r.org_id, "name": r.name, "domain": d, "group": group_of(r), "org_type": r.org_type, "type": otype, "links": links,
@@ -202,8 +216,7 @@ def orgs():
         methods = sorted(m for m in (w.routines_ever.split(";") if w is not None and isinstance(w.routines_ever, str) else []) if m in ROUTINES)
         panel_level = clean(w.max_level_ever) if w is not None else None
         uei = l.firm if isinstance(l.firm, str) and len(l.firm) == 12 else None
-        links = {k: v for k, v in {"website": f"https://{d}/", "sam": f"https://sam.gov/entity/{uei}/coreData" if uei else None,
-                                   "usaspending": f"https://www.usaspending.gov/keyword_search/{str(l.firm_name).replace(' ', '%20')}"}.items() if v}
+        links = {k: v for k, v in {"website": f"https://{d}/", "usaspending": usaspending_link(uei, l.firm_name)}.items() if v}
         rows.append({
             "id": d, "name": str(l.firm_name).title().replace(" Llc", " LLC").replace(" Inc", " Inc"), "domain": d, "group": "fed", "org_type": "contractor",
             "type": "General contractors and construction managers", "links": links, "pages_evidence": ev.get(d), "contracts": contracts.get(d),

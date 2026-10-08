@@ -6,22 +6,26 @@ window.DataTab = (function () {
     const a = (u, t) => `<a href="${u}" target="_blank" rel="noopener">${t || u.replace(/^https?:\/\//, "")}</a>`;
     document.getElementById("data-body").innerHTML = `
 <h2>Sources</h2>
-<p>Every number on this site is computed from public data by scripts, in the order below; the exported JSON files behind each view are listed at the end. The code will be released with the papers.</p>
-<table><tr><th>Source</th><th>What is used</th><th>Where</th><th>Period</th><th>Count</th><th>Script</th></tr>
-<tr><td>ENR Top 400 contractors</td><td>rank, headquarters, revenue, market shares, CM-at-risk share</td><td>${a("https://www.chubb.com/content/dam/chubb-sites/chubb-com/us-en/surety/enr-top-400.pdf", "2025 list (PDF)")}, 2024 and 2023 editions</td><td>2023 to 2025</td><td>${S.enr_firms} firms (2025)</td><td>x06</td></tr>
-<tr><td>Lean Construction Institute directory</td><td>member name, type, description, website; archived directories for the first and last year listed</td><td>${a("https://leanconstruction.org/member-directory/")}, ${a("https://web.archive.org/", "Wayback Machine")}</td><td>2013 to 2026 (no archive for 2018)</td><td>${S.lci_members} members (2026)</td><td>x05</td></tr>
-<tr><td>USAspending award data archive</td><td>every federal prime contract transaction, NAICS 23; awards rebuilt with corrected definitions; 153,355 usable awards</td><td>${a("https://files.usaspending.gov/award_data_archive/")}</td><td>FY2008 to FY2026</td><td>${S.panel_domains} contractor websites in the panel</td><td>x07; 01, 04, 05 a1</td></tr>
-<tr><td>SAM.gov entity extract</td><td>website, city, state and business start date per UEI</td><td>${a("https://open.gsa.gov/api/sam-entity-extracts-api/", "SAM entity extracts API")}</td><td>October 2026</td><td></td><td>x09</td></tr>
-<tr><td>SAM.gov Contract Opportunities</td><td>construction notices with full text; delivery-method and lean terms</td><td>${a("https://sam.gov/data-services/Contract%20Opportunities?privacy=Public", "public extract")}</td><td>FY2008 to FY2026</td><td>${f(S.solicitations)} solicitations</td><td>x13; 08</td></tr>
-<tr><td>Wayback Machine</td><td>archived pages of the panel firms' websites (year index, lean and practice pages, home pages)</td><td>${a("https://web.archive.org/", "web.archive.org")} (CDX API)</td><td>2008 to 2026</td><td>8,137 pages</td><td>x10; 05 a2</td></tr>
-<tr><td>Common Crawl</td><td>archived pages of the panel firms (one crawl a year) and recent pages of every frame organization</td><td>${a("https://commoncrawl.org/", "commoncrawl.org")} (cluster indexes and WARC ranges)</td><td>2013 to 2026; 2024 to 2026</td><td>${f(S.panel_pages - 8137)} and ${f(S.recent_pages)} pages</td><td>x11, x12; 05 a2, 12 l1</td></tr>
-<tr><td>Census gazetteer</td><td>ZIP code and place centroids for the maps</td><td>${a("https://www2.census.gov/geo/", "census.gov")}</td><td>2024</td><td>${f(S.with_place)} organizations placed</td><td>x15; 06 f2, 12 l2</td></tr></table>
+<p>Every number on this site is computed from public data; the files behind each view are listed at the end, and the code will be released with the papers.</p>
+<table><tr><th>Source</th><th>What is used</th><th>Where</th><th>Period</th><th>Count</th></tr>
+<tr><td>ENR Top 400 contractors</td><td>rank, headquarters, revenue, market shares, CM-at-risk share</td><td>${a("https://www.chubb.com/content/dam/chubb-sites/chubb-com/us-en/surety/enr-top-400.pdf", "2025 list (PDF)")}, 2024 and 2023 editions</td><td>2023 to 2025</td><td>${S.enr_firms} firms (2025)</td></tr>
+<tr><td>Lean Construction Institute directory</td><td>member name, type, description, website; archived directories for the first and last year listed</td><td>${a("https://leanconstruction.org/member-directory/")}, ${a("https://web.archive.org/", "Wayback Machine")}</td><td>2013 to 2026 (no archive for 2018)</td><td>${S.lci_members} members (2026)</td></tr>
+<tr><td>USAspending award data archive</td><td>every federal prime contract transaction, NAICS 23; awards rebuilt with corrected definitions; 153,355 usable awards</td><td>${a("https://files.usaspending.gov/award_data_archive/")}</td><td>FY2008 to FY2026</td><td>${S.panel_domains} contractor websites in the panel</td></tr>
+<tr><td>USAspending recipient profiles</td><td>the public profile of each contractor, linked from its page here</td><td>${a("https://www.usaspending.gov/", "usaspending.gov")}</td><td>October 2026</td><td></td></tr>
+<tr><td>SAM.gov entity extract</td><td>website, city, state and business start date of each registered contractor</td><td>${a("https://open.gsa.gov/api/sam-entity-extracts-api/", "SAM entity extracts")}</td><td>October 2026</td><td></td></tr>
+<tr><td>SAM.gov Contract Opportunities</td><td>construction notices with full text; delivery-method and lean terms</td><td>${a("https://sam.gov/data-services/Contract%20Opportunities?privacy=Public", "public extract")}</td><td>FY2008 to FY2026</td><td>${f(S.solicitations)} solicitations</td></tr>
+<tr><td>Wayback Machine</td><td>archived pages of the panel firms\u2019 websites (year index, lean and practice pages, home pages)</td><td>${a("https://web.archive.org/", "web.archive.org")}</td><td>2008 to 2026</td><td>8,137 pages</td></tr>
+<tr><td>Common Crawl</td><td>archived pages of the panel firms (one crawl a year) and recent pages of every frame organization</td><td>${a("https://commoncrawl.org/", "commoncrawl.org")}</td><td>2013 to 2026; 2024 to 2026</td><td>${f(S.panel_pages - 8137)} and ${f(S.recent_pages)} pages</td></tr>
+<tr><td>Census gazetteer</td><td>ZIP code and place centroids for the maps</td><td>${a("https://www2.census.gov/geo/", "census.gov")}</td><td>2024</td><td>${f(S.with_place)} organizations placed</td></tr></table>
 
-<h2>Pipeline</h2>
+<h2>How the numbers are made</h2>
 <ul>
-<li><b>Fetch</b> (00_code): x05 LCI directory, x06 ENR lists, x07 USAspending, x09 SAM entities, x10 Wayback, x11 and x12 Common Crawl, x13 Contract Opportunities, x15 Census geography. Raw files are kept as received, with SHA-256 manifests.</li>
-<li><b>Analyses</b> (02_analysis): 01 construction extract; 02 LCI membership panel; 03 LCI to federal contractor matches; 04 corrected award sample; 05 lean capability panel (targets a1 to a1d, dictionary pass a2, gate a5); 06 landscape firm frame and places; 07 LCI member landscape; 08 federal notices; 09 ENR affiliation; 10 project records (three local language models, voted); 11 firm table for the selection and diffusion tests; 12 lean language across the frame.</li>
-<li><b>This site</b>: <code>build_data.py</code> reads the results of those folders and writes the JSON files below; the browser only counts, filters and draws.</li>
+<li><b>Collect.</b> Each source is downloaded once, kept exactly as received, and fingerprinted (SHA-256), so a later check can tell whether an input changed.</li>
+<li><b>Build the frame.</b> The ENR list, the LCI directory and the federal contractors with usable awards are joined into one table of organizations by website domain; headquarters are placed with the Census gazetteer.</li>
+<li><b>Read the websites.</b> Archived pages are parsed to text and coded with the lean dictionary (definitions below); for the panel firms year by year, for the rest of the frame on the recent pages. Commitment years, routines named and persistence follow from the coded pages.</li>
+<li><b>Read the notices and the awards.</b> Solicitation texts are searched for delivery-method and lean terms; the award records are rebuilt with corrected definitions and summarized by pricing type, competition and kind of work.</li>
+<li><b>Read the project pages.</b> Pages with lean language are read by three local language models with fixed categories; a field is kept when two agree and the quote is checked against the page.</li>
+<li><b>This site.</b> One script exports the results as the JSON files below; the browser only counts, filters and draws.</li>
 </ul>
 
 <h2>Definitions</h2>

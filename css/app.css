@@ -148,3 +148,15 @@ th.sortable .arr { font-size: 9px; margin-left: 2px; }
 .maplegend .t { font-weight: 600; color: var(--ink); }
 .maplegend div { display: flex; align-items: center; gap: 4px; white-space: nowrap; }
 .maplegend svg { flex: none; width: 18px; height: 18px; }
+.chip[data-t].on { background: color-mix(in srgb, var(--c) 22%, #fff); border-color: var(--c); }
+.chip[data-t]::before { content: ""; display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--c); margin-right: 6px; vertical-align: 1px; }
+.controls { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px 16px; margin-bottom: 6px; }
+.intro h2 { font-family: var(--serif); font-weight: normal; font-size: 22px; margin: 2px 0 6px; }
+.intro p { max-width: 900px; font-size: 13.5px; line-height: 1.5; margin: 0 0 12px; }
+.bignums.row { flex-direction: row; flex-wrap: wrap; gap: 14px 32px; }
+.bignums.row .bignum { max-width: 220px; }
+.bignums.row .bignum .v { font-size: 34px; }
+.bignum.red .v { color: var(--lean3); }
+.grid2.tight { margin-top: 6px; gap: 12px; align-items: start; }
+#meth-groups { margin-bottom: 4px; }
+#meth-list h3 a { font-weight: normal; font-size: 12px; margin-left: 8px; }

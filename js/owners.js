@@ -1,55 +1,98 @@
-// Owners view: what federal solicitations ask for (delivery methods, lean), the lean cases, departments, LCI owners.
+// Owners view: what federal owners ask for in construction solicitations (pick the terms), the two notices that name
+// lean, how the panel firms\u2019 awards are written (pick a dimension), and the owners that joined LCI (pick a sector).
 window.Owners = (function () {
-  let f, lci, ct, log = true;
+  let f, lci, ct, orgs;
   const $ = (id) => document.getElementById(id);
   const COLORS = { design_build: "#4a3b8c", idiq_matoc: "#8a7fc4", design_bid_build: "#0f6b5b", cm_at_risk: "#4fa892", progressive_design_build: "#8fd3c3", eci: "#a9491a", ipd: "#f4a259", any_lean: "#c8553d" };
+  const TERMS = ["design_build", "idiq_matoc", "design_bid_build", "cm_at_risk", "progressive_design_build", "eci", "ipd", "any_lean"];
+  const termsOn = new Set(["design_build", "idiq_matoc", "design_bid_build", "cm_at_risk", "any_lean"]);
+  let asShare = true, dim = "compete", sector = null;
+  const depName = (d) => d.replace(/^DEPT OF /, "").replace(/^DEPARTMENT OF /, "").split(",")[0].toLowerCase().replace(/\b\w/g, (c) => c.toUpperCase()).replace("Of ", "of ");
+  const title = (s) => s.toLowerCase().replace(/\b\w/g, (c) => c.toUpperCase());
+  const SECTOR = { PRIVATE: "Private industry", HEALTH: "Health care", EDUCATION: "Education", ENERGY: "Energy", GOVERNMENT: "Government", OTHER: "Other" };
+  const sectorName = (s) => SECTOR[s] || title(s);
 
-  function figFed() {
-    const keys = ["design_build", "idiq_matoc", "design_bid_build", "cm_at_risk", "progressive_design_build", "eci", "ipd", "any_lean"];
-    const dy = { design_build: 6, idiq_matoc: -6, cm_at_risk: 2, progressive_design_build: -10, eci: 12, ipd: -2, any_lean: 8, design_bid_build: 4 };
-    const series = keys.map((k) => ({ key: k, name: f.terms[k], color: COLORS[k], big: k === "any_lean", width: k === "any_lean" ? 1.2 : 1.8, dy: dy[k],
-      values: f.by_year.map((r) => ({ x: r.fy, y: r[k], of: Math.round(r.solicitations * r.with_text) })) }));
-    C.lines($("fig-fed"), series, { h: 320, log, yLabel: "solicitations naming the term" });
+  // A. headline numbers of the solicitations
+  function headline() {
+    const tot = d3.sum(f.by_year, (r) => Math.round(r.solicitations * r.with_text));
+    const sum = (k) => d3.sum(f.by_year, (r) => r[k]);
+    const nums = [
+      { v: f.total_solicitations, l: "federal construction solicitations, FY2008 to FY2026 (SAM.gov)" },
+      { v: 100 * sum("design_build") / tot, suffix: "%", d: 1, l: "name design-build" },
+      { v: 100 * sum("idiq_matoc") / tot, suffix: "%", d: 1, l: "name an IDIQ or MATOC vehicle" },
+      { v: 100 * sum("cm_at_risk") / tot, suffix: "%", d: 2, l: "name construction manager at risk" },
+      { v: f.lean_solicitations.length, l: "name a lean method, of all solicitations with a full text", cls: "red" },
+    ];
+    const box = $("own-nums"); box.innerHTML = "";
+    nums.forEach((n) => {
+      const el = document.createElement("div"); el.className = "bignum " + (n.cls || ""); el.innerHTML = '<div class="v"></div><div class="l"></div>'; box.appendChild(el);
+      M.countTo(el.querySelector(".v"), n.v, { suffix: n.suffix || "", decimals: n.d || 0, ms: 900 });
+      el.querySelector(".l").textContent = n.l;
+    });
   }
+
+  // B. the chosen terms by fiscal year and by department
+  function figTerms() {
+    const keys = TERMS.filter((k) => termsOn.has(k));
+    const series = keys.map((k) => ({ key: k, name: f.terms[k], color: COLORS[k], width: k === "any_lean" ? 1.4 : 1.8, big: k === "any_lean",
+      values: f.by_year.map((r) => { const of = Math.round(r.solicitations * r.with_text); return { x: r.fy, y: asShare ? 100 * r[k] / of : r[k], n: r[k], of }; }) }));
+    C.lines($("fig-fed"), series, { h: 300, yLabel: asShare ? "share of the year\u2019s solicitations with a full text, %" : "solicitations naming the term",
+      yFmt: asShare ? (v) => v.toFixed(v < 1 && v > 0 ? 1 : 0) + "%" : C.fmt,
+      tip: (k, v) => `<b>FY${v.x}</b>${k.name}: ${C.fmt(v.n)} of ${C.fmt(v.of)} solicitations (${(100 * v.n / v.of).toFixed(v.n && v.n < v.of / 100 ? 2 : 1)}%)` });
+    const rows = f.by_department.map((r) => ({ label: depName(r.department), n: r.solicitations, values: Object.fromEntries(keys.map((k) => [k, r[k] / r.solicitations])) }));
+    const xmax = Math.min(1, 1.15 * (d3.max(rows, (r) => d3.max(keys, (k) => r.values[k])) || .01));
+    C.hbars($("fig-dep"), rows, keys.map((k) => ({ key: k, name: f.terms[k], fill: COLORS[k], dark: COLORS[k] })), { share: true, rowH: 10, gap: 9, left: 170, xmax, pctDigits: 1 });
+  }
+
+  // C. the two notices that name lean
   function cases() {
     const el = $("fed-cases");
-    el.innerHTML = `<p class="fine">${C.fmt(f.total_solicitations)} distinct construction solicitations; ${f.lean_solicitations.length} name a lean method.</p>` +
-      f.lean_solicitations.map((s) => `<div class="case"><div class="h">${s.title}</div><div class="muted">${[s.department, s.sub_tier, s.office].filter(Boolean).join(" · ")} · ${String(s.first_posted).slice(0, 10)} · ${s.notice_types}</div><div class="p">${s.passage.trim()}</div><div class="muted">terms: ${s.terms}</div></div>`).join("");
+    el.innerHTML = f.lean_solicitations.map((s) => `<div class="case"><div class="h">${s.title}</div><div class="muted">${[s.department ? title(s.department) : null, s.sub_tier ? title(s.sub_tier) : null, s.office ? title(s.office) : null].filter(Boolean).join(" \u00b7 ")} \u00b7 ${String(s.first_posted).slice(0, 10)} \u00b7 ${s.notice_types}</div><div class="p">${s.passage.trim()}</div><div class="muted">terms found: ${s.terms.split(";").map((t) => t.trim().replace(/_/g, " ")).join(", ")}</div></div>`).join("");
   }
-  function figDep() {
-    const keys = ["design_build", "idiq_matoc", "design_bid_build", "cm_at_risk"];
-    const name = (d) => d.replace(/^DEPT OF /, "").split(",")[0].toLowerCase().replace(/\b\w/g, (c) => c.toUpperCase()).replace("Of ", "of ");
-    const rows = f.by_department.map((r) => ({ label: name(r.department), n: r.solicitations, values: Object.fromEntries(keys.map((k) => [k, r[k] / r.solicitations])) }));
-    const xmax = Math.min(1, 1.15 * d3.max(rows, (r) => d3.max(keys, (k) => r.values[k])));
-    C.hbars($("fig-dep"), rows, keys.map((k) => ({ key: k, name: f.terms[k], fill: COLORS[k], dark: COLORS[k] })), { share: true, rowH: 11, gap: 10, left: 170, xmax });
-  }
+
+  // D. contract types of the panel firms\u2019 awards: one dimension at a time, and its share by year
+  const DIMS = { pricing: "Pricing type", compete: "Extent of competition", work: "Kind of work" };
+  const YEAR_SERIES = { pricing: [["firm_fixed", "Firm fixed price", "#4a3b8c"]], compete: [["set_aside", "Set-aside", "#a9491a"], ["full_open", "Full and open competition", "#0f6b5b"]], work: [["new_construction", "New construction", "#f4a259"]] };
   function figContracts() {
-    const el = $("fig-contracts"); el.innerHTML = "";
-    [["pricing", "Pricing type"], ["compete", "Extent of competition"], ["work", "Kind of work"]].forEach(([k, name]) => {
-      const box = document.createElement("div"); el.appendChild(box);
-      const tot = Object.values(ct[k]).reduce((a, b) => a + b, 0);
-      const rows = Object.entries(ct[k]).sort((a, b) => b[1] - a[1]).map(([label, n]) => ({ label, values: { s: n / tot }, n }));
-      C.hbars(box, rows, [{ key: "s", name: `${name} (share of ${C.fmt(tot)} awards)`, fill: "#c9c4e8", dark: "#4a3b8c" }], { share: true, rowH: 13, gap: 5, left: 200, labelN: false });
-    });
-    const by = ct.by_year;
-    const series = [
-      { key: "ff", name: "firm fixed price", color: "#4a3b8c", values: by.map((r) => ({ x: r.year, y: Math.round(100 * r.firm_fixed / r.awards), of: r.awards })) },
-      { key: "sa", name: "set-aside", color: "#a9491a", values: by.map((r) => ({ x: r.year, y: Math.round(100 * r.set_aside / r.awards), of: r.awards })) },
-      { key: "fo", name: "full and open", color: "#0f6b5b", values: by.map((r) => ({ x: r.year, y: Math.round(100 * r.full_open / r.awards), of: r.awards })) },
-      { key: "nc", name: "new construction", color: "#f4a259", values: by.map((r) => ({ x: r.year, y: Math.round(100 * r.new_construction / r.awards), of: r.awards })) },
-    ];
-    const box = document.createElement("div"); el.appendChild(box);
-    C.lines(box, series, { h: 220, yLabel: "share of the year's usable awards, %" });
+    document.querySelectorAll("#ct-dim .chip").forEach((c) => c.classList.toggle("on", c.dataset.d === dim));
+    const tot = Object.values(ct[dim]).reduce((a, b) => a + b, 0);
+    const rows = Object.entries(ct[dim]).sort((a, b) => b[1] - a[1]).map(([label, n]) => ({ label, values: { s: n / tot }, n }));
+    C.hbars($("fig-contracts"), rows, [{ key: "s", name: `${DIMS[dim]}, share of ${C.fmt(tot)} usable awards of the panel firms`, fill: "#c9c4e8", dark: "#4a3b8c" }], { share: true, rowH: 16, gap: 8, left: 230, labelN: false, tipN: true });
+    const by = ct.by_year.filter((r) => r.awards >= 30);
+    const series = YEAR_SERIES[dim].map(([k, name, color]) => ({ key: k, name, color, values: by.map((r) => ({ x: r.year, y: 100 * r[k] / r.awards, n: r[k], of: r.awards })) }));
+    C.lines($("fig-ct-year"), series, { h: 200, yLabel: "share of the year\u2019s usable awards, %", yFmt: (v) => v.toFixed(0) + "%", ymax: 100,
+      tip: (k, v) => `<b>FY${v.x}</b>${k.name}: ${C.fmt(v.n)} of ${C.fmt(v.of)} awards (${(100 * v.n / v.of).toFixed(0)}%)` });
   }
+
+  // E. owners in the LCI directory: bars by sector, click one to list its members
   function figOwners() {
-    const rows = lci.sectors.filter((r) => r.type === "OWNER" && r.sector).sort((a, b) => b.members - a.members).map((r) => ({ label: r.sector.toLowerCase().replace(/\b\w/g, (c) => c.toUpperCase()), values: { n: r.members } }));
-    C.hbars($("fig-owners"), rows, [{ key: "n", name: "LCI owner members, 2026", fill: "#8fd3c3", dark: "#0f6b5b" }], { share: false, rowH: 16, gap: 8, left: 120, labelN: false });
+    const owners = lci.members.filter((m) => m.type === "OWNER");
+    const bySector = d3.rollup(owners, (v) => v.length, (m) => m.sector || "OTHER");
+    const rows = [...bySector].sort((a, b) => b[1] - a[1]).map(([s, n]) => ({ label: sectorName(s), key: s, values: { n }, sel: s === sector }));
+    C.hbars($("fig-owners"), rows, [{ key: "n", name: "LCI owner members, 2026", fill: "#8fd3c3", dark: "#0f6b5b" }], { share: false, rowH: 16, gap: 8, left: 130, labelN: false,
+      onClick: (r) => { sector = sector === r.key ? null : r.key; figOwners(); }, selected: (r) => r.sel });
+    const list = owners.filter((m) => !sector || (m.sector || "OTHER") === sector).sort((a, b) => a.name.localeCompare(b.name));
+    const byName = new Map(orgs.filter((o) => o.group === "lci").map((o) => [o.name.toLowerCase(), o]));
+    $("own-list").innerHTML = `<p class="fine">${sector ? `${sectorName(sector)}: ` : ""}${list.length} owner member${list.length === 1 ? "" : "s"}${sector ? ' <a href="#" id="own-all">show all</a>' : ""}</p>` +
+      `<table><tr><th>Owner</th><th>Sector</th><th>State</th><th>Lean claimed</th><th></th></tr>` + list.map((m) => {
+        const o = byName.get(m.name.toLowerCase());
+        return `<tr><td>${o ? `<a href="#organizations/${encodeURIComponent(o.id)}">${m.name}</a>` : m.name}</td><td class="muted">${sectorName(m.sector || "OTHER")}</td><td>${m.state || ""}</td><td>${m.lean === "YES" ? "yes" : ""}</td><td><a class="muted" href="https://leanconstruction.org/sponsors/${m.slug}/" target="_blank" rel="noopener">LCI</a></td></tr>`;
+      }).join("") + `</table>`;
+    const all = $("own-all"); if (all) all.addEventListener("click", (ev) => { ev.preventDefault(); sector = null; figOwners(); });
   }
+
   function init(data) {
-    f = data.federal; lci = data.lci; ct = data.contracts;
-    document.querySelectorAll("#fed-scale .chip").forEach((c) => c.addEventListener("click", () => { document.querySelectorAll("#fed-scale .chip").forEach((x) => x.classList.toggle("on", x === c)); log = c.dataset.s === "log"; figFed(); }));
-    figFed(); cases(); figContracts(); figDep(); figOwners();
-    C.onResize(() => { figFed(); figContracts(); figDep(); figOwners(); });
+    f = data.federal; lci = data.lci; ct = data.contracts; orgs = data.orgs;
+    const chips = $("fed-terms");
+    chips.innerHTML = TERMS.map((k) => `<button class="chip ${termsOn.has(k) ? "on" : ""}" data-t="${k}" style="--c:${COLORS[k]}">${f.terms[k]}</button>`).join("");
+    chips.querySelectorAll(".chip").forEach((c) => c.addEventListener("click", () => {
+      if (termsOn.has(c.dataset.t) && termsOn.size === 1) return;
+      c.classList.toggle("on"); if (c.classList.contains("on")) termsOn.add(c.dataset.t); else termsOn.delete(c.dataset.t); figTerms();
+    }));
+    document.querySelectorAll("#fed-scale .chip").forEach((c) => c.addEventListener("click", () => { document.querySelectorAll("#fed-scale .chip").forEach((x) => x.classList.toggle("on", x === c)); asShare = c.dataset.s === "share"; figTerms(); }));
+    document.querySelectorAll("#ct-dim .chip").forEach((c) => c.addEventListener("click", () => { dim = c.dataset.d; figContracts(); }));
+    headline(); figTerms(); cases(); figContracts(); figOwners();
+    C.onResize(() => { figTerms(); figContracts(); figOwners(); });
   }
   return { init, show() {}, hide() {} };
 })();

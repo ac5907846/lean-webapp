@@ -8,7 +8,7 @@ window.Organizations = (function () {
   const LVL = ["read, no lean language", "general lean language", "names a lean routine", "three or more routines on one page"];
   const SHORT = { "General contractors and construction managers": "GC / CM", "Specialty trade contractors": "Trade", "Lean and management consultants": "Consultant",
                   "Architects and engineers": "A/E", "Owners": "Owner", "Technology firms": "Technology", "Associations and others": "Association", "Manufacturers and suppliers": "Supplier", "Not classified": "" };
-  const LINKS = { website: "website", lci: "LCI directory entry", enr: "ENR Top 400 list (2025 PDF)", sam: "SAM.gov entity record", usaspending: "USAspending search" };
+  const LINKS = { website: "website", lci: "LCI directory entry", enr: "ENR Top 400 list (2025 PDF)", usaspending: "USAspending recipient profile" };
 
   function csv(rows) {
     const cols = ["name", "domain", "type", "group", "city", "state", "enr_rank", "revenue_musd", "market", "lci_first_year", "fed_awards", "fed_value_musd", "pages", "recent_pages", "level", "commit_year", "routine_year", "methods"];
@@ -63,7 +63,7 @@ window.Organizations = (function () {
     const rows = filtered();
     $("org-count").textContent = `${C.fmt(rows.length)} organizations`;
     const el = $("org-list");
-    const head = `<tr>${COLS.map(([k, label, cls]) => `<th class="sortable ${cls || ""}" data-k="${k}" title="Sort by ${label.toLowerCase()}">${label}${k === sortKey ? `<span class="arr">${sortDesc ? "▼" : "▲"}</span>` : ""}</th>`).join("")}</tr>`;
+    const head = `<tr>${COLS.map(([k, label, cls]) => `<th class="sortable ${cls || ""}" data-k="${k}" title="Sort by ${label.toLowerCase()}">${label}${k === sortKey ? `<span class="arr">${sortDesc ? "\u25bc" : "\u25b2"}</span>` : ""}</th>`).join("")}</tr>`;
     const body = rows.slice(0, shown).map((d) => `<tr data-id="${d.id}" class="${selected && selected.id === d.id ? "sel" : ""}">
       <td><span class="dot ${d.group}"></span>${d.name}</td><td class="muted">${SHORT[d.type] || d.type}</td><td>${d.state || ""}</td><td class="num">${d.enr_rank || ""}</td><td class="num">${d.revenue_musd ? C.fmt(Math.round(d.revenue_musd)) : ""}</td>
       <td class="num">${d.fed_awards || ""}</td><td class="num">${(d.pages || 0) + (d.recent_pages || 0) || ""}</td><td>${lvlTag(d)}</td><td class="num">${d.commit_year || ""}</td><td class="num">${d.methods && d.methods.length ? d.methods.length : ""}</td></tr>`).join("");
@@ -85,7 +85,7 @@ window.Organizations = (function () {
     if (!d) { el.innerHTML = '<p class="muted">Select an organization.</p>'; return; }
     const row = (k, v) => (v == null || v === "" ? "" : `<dt>${k}</dt><dd>${v}</dd>`);
     const pct = (v) => (v == null ? null : Math.round(100 * v) + "%");
-    let h = `<h2>${d.name}</h2><div class="dom">${d.domain || ""}${d.domain ? " · " : ""}<span class="dot ${d.group}"></span>${G[d.group].name}${d.lci_type ? " · " + d.lci_type.toLowerCase() : ""}</div>`;
+    let h = `<h2>${d.name}</h2><div class="dom">${d.domain || ""}${d.domain ? " \u00b7 " : ""}<span class="dot ${d.group}"></span>${G[d.group].name}${d.lci_type ? " \u00b7 " + d.lci_type.toLowerCase() : ""}</div>`;
     h += `<dl>${row("Headquarters", [d.city, d.state, d.country !== "US" ? d.country : null].filter(Boolean).join(", "))}${row("Organization type", d.org_type)}`;
     h += `${row("ENR Top 400 rank", d.enr_rank ? `${d.enr_rank} (revenue $${C.fmt(Math.round(d.revenue_musd))} million)` : null)}${row("Dominant market", d.market)}`;
     h += `${row("General building", pct(d.pct_general_building != null ? d.pct_general_building / 100 : null))}${row("CM at risk", pct(d.pct_cm_at_risk != null ? d.pct_cm_at_risk / 100 : null))}`;

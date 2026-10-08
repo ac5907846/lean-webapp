@@ -31,7 +31,7 @@ window.Landscape = (function () {
     if (d.enr_rank) bits.push(`ENR rank ${d.enr_rank}, $${C.fmt(Math.round(d.revenue_musd))} million`);
     if (d.fed_awards) bits.push(`${d.fed_awards} usable federal awards`);
     if (d.commit_year) bits.push(`first documented commitment ${d.commit_year}${d.left_censored ? " (left-censored)" : ""}`);
-    return `<b>${d.name}</b><span class="m">${bits.filter(Boolean).join(" · ")}</span><br>${lvl}${d.methods && d.methods.length ? "<br>" + d.methods.map((m) => M_NAMES[m] || m).join(", ") : ""}`;
+    return `<b>${d.name}</b><span class="m">${bits.filter(Boolean).join(" \u00b7 ")}</span><br>${lvl}${d.methods && d.methods.length ? "<br>" + d.methods.map((m) => M_NAMES[m] || m).join(", ") : ""}`;
   }
   let M_NAMES = {};
 

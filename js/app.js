@@ -1,11 +1,11 @@
 // Boot: load the data, build each view once, route by hash.
 (async function () {
-  const V = "2";
+  const V = "3";
   const get = (f) => fetch(`data/${f}?v=${V}`).then((r) => r.json());
   const [S, orgs, topo] = await Promise.all([get("summary.json"), get("orgs.json"), get("us-states.json")]);
   const [years, methods, lci, enr, federal, projects, contracts] = await Promise.all([get("years.json"), get("methods.json"), get("lci.json"), get("enr.json"), get("federal.json"), get("projects.json"), get("contracts.json")]);
   const data = { S, orgs, topo, years, methods, lci, enr, federal, projects, contracts };
-  document.getElementById("foot").textContent = `Lean construction landscape Â· data built ${S.built} Â· ${S.organizations.toLocaleString("en-US")} organizations Â· provisional until the dictionary is validated`;
+  document.getElementById("foot").textContent = `Lean construction landscape \u00b7 data built ${S.built} \u00b7 ${S.organizations.toLocaleString("en-US")} organizations \u00b7 provisional until the dictionary is validated`;
 
   const views = { landscape: Landscape, organizations: Organizations, methods: Methods, owners: Owners, projects: Projects, data: DataTab };
   const built = new Set();
