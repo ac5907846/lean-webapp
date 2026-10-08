@@ -196,13 +196,13 @@ window.C = (function () {
   function heatTable(el, rows, cols, { digits = 1 } = {}) {
     const max = Object.fromEntries(cols.map((c) => [c.key, d3.max(rows, (r) => r.values[c.key] || 0) || 1]));
     const mix = (color, t) => `color-mix(in srgb, ${color} ${Math.round(8 + 72 * t)}%, #fff)`;
-    el.innerHTML = `<table class="heat"><tr><th class="r"></th>${cols.map((c) => `<th title="${c.name}">${c.short || c.name}</th>`).join("")}</tr>` +
-      rows.map((r) => `<tr><td class="r">${r.label} <span class="n">n = ${fmt(r.n)}</span></td>${cols.map((c) => {
+    el.innerHTML = `<div class="heat-wrap"><table class="heat"><tr><th class="r"></th>${cols.map((c) => `<th title="${c.name}">${c.short || c.name}</th>`).join("")}</tr>` +
+      rows.map((r) => `<tr><td class="r">${r.label}<span class="n">n = ${fmt(r.n)}</span></td>${cols.map((c) => {
         const v = r.values[c.key] || 0, k = r.counts ? r.counts[c.key] : null;
         return `<td style="background:${v ? mix(c.color, v / max[c.key]) : "#fff"}" data-tip="${c.name}: ${k != null ? fmt(k) + " of " + fmt(r.n) + " (" : ""}${pct(v, v < .01 && v > 0 ? 2 : digits)}${k != null ? ")" : ""}">${pct(v, v < .01 && v > 0 ? 2 : digits)}</td>`;
-      }).join("")}</tr>`).join("") + "</table>";
+      }).join("")}</tr>`).join("") + "</table></div>";
     el.querySelectorAll("td[data-tip]").forEach((td) => {
-      const label = td.parentElement.firstChild.firstChild.textContent;
+      const label = td.parentElement.firstChild.firstChild.textContent.trim();
       td.addEventListener("mousemove", (ev) => showTip(ev, `<b>${label}</b>${td.dataset.tip}`)); td.addEventListener("mouseleave", hideTip);
     });
   }

@@ -193,3 +193,9 @@ th.sortable .arr { font-size: 9px; margin-left: 2px; }
 @media (max-width: 1000px) { .hero-map .map-wrap { aspect-ratio: 975 / 610; flex: none; } }
 .smbox { border: 1px solid var(--line); border-radius: 6px; padding: 6px 8px 4px; background: #fff; min-width: 0; }
 .smbox svg { display: block; max-width: 100%; }
+.card { overflow: hidden; }
+.heat-wrap { overflow-x: auto; max-width: 100%; }
+.heat th { white-space: normal; font-size: 11px; line-height: 1.15; padding: 3px 5px; vertical-align: bottom; }
+.heat td { padding: 3px 5px; }
+.heat td.r { line-height: 1.15; }
+.heat td .n { display: block; }
