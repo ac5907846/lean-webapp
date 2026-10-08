@@ -14,9 +14,16 @@ Tabs (hash router, `#landscape` ... `#data`):
   year-by-year coverage strip, methods named, archived pages with lean language linked to the Wayback Machine and to
   the live page, contract types, source links).
   `#organizations/<id>` opens one organization (the map dots link here).
-- Methods: organizations per method, co-occurrence bubble matrix, first year each method is named.
-- Owners: federal solicitations by fiscal year and term (log or linear), the two lean solicitations, departments,
-  LCI owner members by sector.
+- Methods: organizations per method and the pairs named together, counted from the organizations of the chosen
+  groups (chips); a click on a method or a pair lists the organizations with links; first year each method is named
+  (panel).
+- Owners (rewritten 2026-10-08 after the owner found it hard to read): a question (do owners ask for lean?), headline
+  counts, the solicitation terms by fiscal year with term chips and share or count, the same terms by department, the
+  two lean notices, the contract types of the panel awards (one dimension at a time with its share by year), and the
+  LCI owner members by sector (click a sector to list them).
+  Links: an organization with a UEI links to its USAspending recipient profile (00_code/x16 resolves the UEI; SAM.gov
+  entity pages have no stable public address, their routes return 404 outside a session).
+  Scripts are kept ASCII (non-ASCII characters as \u escapes) so a server without a charset header cannot garble them.
 - Projects: project records on a map and as cards with the verified quote.
 - Data: sources, definitions, status and limits.
 
