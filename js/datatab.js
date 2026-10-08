@@ -2,7 +2,7 @@
 // plate for its meaning, click a stage for the full explanation), the sources with their sizes and links, then the
 // definitions and limits folded away.
 window.DataTab = (function () {
-  let S, m, picked = 0;
+  let S, m, O, picked = 0;
   const $ = (id) => document.getElementById(id);
   const f = (v) => C.fmt(v);
   const bytes = (b) => (b >= 1e9 ? (b / 1e9).toFixed(1) + " GB" : b >= 1e6 ? Math.round(b / 1e6) + " MB" : Math.round(b / 1e3) + " KB");
@@ -24,6 +24,19 @@ window.DataTab = (function () {
     dict: (g) => { g.append("rect").attr("x", 1).attr("y", 1).attr("width", 12).attr("height", 12).attr("rx", 2).attr("fill", "#fff").attr("stroke", EDGE); g.append("text").attr("x", 7).attr("y", 11).attr("text-anchor", "middle").attr("font-size", 9).attr("font-weight", 700).attr("fill", EDGE).text("A"); },
   };
 
+  // the organizations of the frame by type, largest first; the project records close the list
+  const TYPE_SHORT = { "General contractors and construction managers": "General contractors, CMs", "Specialty trade contractors": "Specialty trade contractors",
+    "Lean and management consultants": "Lean and management consultants", "Architects and engineers": "Architects and engineers", "Owners": "Owners",
+    "Technology firms": "Technology firms", "Manufacturers and suppliers": "Manufacturers and suppliers", "Associations and others": "Associations and others" };
+  const TYPE_GLYPH = { "Owners": "pin", "Architects and engineers": "doc", "Lean and management consultants": "bubble", "Technology firms": "site" };
+  function typePlates() {
+    const c = {};
+    O.forEach((o) => { const t = o.type || "Other"; c[t] = (c[t] || 0) + 1; });
+    const rows = Object.entries(c).sort((a, b) => b[1] - a[1]).slice(0, 6);
+    const read = (t) => O.filter((o) => (o.type || "Other") === t && o.level != null).length, lean = (t) => O.filter((o) => (o.type || "Other") === t && (o.level || 0) >= 1).length;
+    return rows.map(([t, n]) => ({ g: TYPE_GLYPH[t] || "table", l: TYPE_SHORT[t] || t, v: f(n), tip: `${f(n)} ${t.toLowerCase()} in the frame; ${f(read(t))} with a website read, ${f(lean(t))} with lean language.` }))
+      .concat([{ g: "doc", l: "Project records", v: f(S.projects), tip: `${f(S.projects)} projects described as lean on contractor websites, read from ${f(S.project_pages)} pages by three local language models (two of three must agree; quotes verified).` }]);
+  }
   function stages() {
     const z = S.sizes || {}, sz = (k) => (z[k] ? bytes(z[k].bytes) : ""), total = Object.values(z).reduce((t, v) => t + v.bytes, 0);
     const wa = z.web_archive ? z.web_archive.sub : {};
@@ -36,7 +49,7 @@ window.DataTab = (function () {
           { g: "doc", l: "SAM.gov notices", v: sz("sam_opportunities"), tip: `Contract Opportunities archives with full notice text, FY2008 to FY2026.` },
           { g: "globe", l: "Web archives", v: `${sz("web_archive")}, ${f(z.web_archive ? z.web_archive.files : 0)} files`, tip: `Archived pages of contractor websites: Wayback Machine captures and Common Crawl records (${Object.entries(wa).map(([k, v]) => `${k.replace("commoncrawl_", "Common Crawl ")}: ${bytes(v.bytes)}`).join("; ")}).` },
           { g: "pin", l: "Census gazetteer", v: sz("census_geography"), tip: "ZIP code and place centroids, state boundaries, for the maps." },
-        ], text: "Each source is downloaded once by its own script, kept exactly as received (zips stay zipped, pages as WARC records), and fingerprinted with SHA-256, so a later run can tell whether an input changed. Request rates follow each provider\u2019s limits; no text of a third party is republished." },
+        ], text: "Each source is downloaded once, kept exactly as received (zips stay zipped, pages as WARC records), and fingerprinted with SHA-256, so a later run can tell whether an input changed. Request rates follow each provider\u2019s limits; no text of a third party is republished." },
       { title: "Build the frame", sub: `${f(S.organizations)} organizations`, kind: "frame", plates: [
           { g: "table", l: "One row per domain", v: f(S.organizations), tip: `ENR Top 400 (2025), LCI directory (2026) and federal builders with usable awards and a SAM website, joined by website domain: LCI ${f(S.by_group.lci)}, ENR not LCI ${f(S.by_group.enr)}, federal ${f(S.by_group.fed)}.` },
           { g: "pin", l: "Headquarters placed", v: f(S.with_place), tip: "SAM registration, LCI address or ENR headquarters, matched to a gazetteer centroid (ZIP, place or state)." },
@@ -53,15 +66,7 @@ window.DataTab = (function () {
           { g: "table", l: "Awards rebuilt", v: f(S.awards_usable), tip: "Prime contract awards (NAICS 23) rebuilt from transactions with corrected definitions and nine restrictions; the defective growth columns of the archive are not used." },
           { g: "bars", l: "Panel firms\u2019 awards", v: f(S.awards_panel), tip: "Usable awards of the panel firms, summarized by pricing type, extent of competition and kind of work." },
         ], text: "Solicitation texts are searched for delivery-method and lean terms (a term counts when the notice names it). The award records are rebuilt from the transaction archive with corrected definitions of value, obligation and period of performance, nine restrictions keep the usable sample, and the awards are summarized by pricing type, competition and kind of work." },
-      { title: "Read project pages", sub: `${f(S.projects)} projects`, kind: "text", plates: [
-          { g: "doc", l: "Project pages with lean", v: f(S.project_pages), tip: "Pages with lean language that describe projects, from the panel firms read so far." },
-          { g: "model", l: "Three local models", v: "2 of 3 agree", tip: "Three local language models read each page with fixed categories (building type, owner, designer, delivery method, place, value, methods); a field is kept when two agree." },
-          { g: "bubble", l: "Verified quotes", v: f(S.projects), tip: "A short quote is kept only when found verbatim in the page text; a method only when its own term appears." },
-        ], text: "Pages with lean language that describe projects are read by three local language models with fixed categories; a field is kept when two of three agree, a method only when its own term appears on the page, and the quote is checked against the page text. A hand check of the records is pending." },
-      { title: "This site", sub: bytes(S.site_bytes || 0), kind: "site", plates: [
-          { g: "site", l: "JSON files", v: bytes(S.site_bytes || 0), tip: "One script exports the results as nine JSON files (organizations, years, methods, LCI, ENR, federal, contracts, projects, summary); the browser only counts, filters and draws." },
-          { g: "globe", l: "Links to the originals", v: "every page", tip: "Each organization links to its website, LCI entry, ENR list, USAspending profile and the archived pages with lean language (Wayback Machine)." },
-        ], text: "One script reads the results of the analysis folders and writes the JSON files behind the views; nothing is computed in the browser beyond counting, filtering and drawing. Page texts are never exported: coded measures, links and short verified quotes only." },
+      { title: "What was covered", sub: `${f(S.organizations)} organizations, ${f(S.projects)} projects`, kind: "frame", plates: typePlates(), text: "The frame by organization type: contractors and construction managers, specialty trades, lean and management consultants, architects and engineers, owners, technology firms, suppliers and associations (types follow the LCI directory for its members; ENR and federal firms outside it are contractors). The last plate counts the project records read from the contractor websites. Page texts are not reproduced; the site shows coded measures, links and short verified quotes." },
     ];
   }
 
@@ -96,11 +101,11 @@ window.DataTab = (function () {
   }
 
   function init(data) {
-    S = data.S; m = data.methods;
+    S = data.S; m = data.methods; O = data.orgs;
     const z = S.sizes || {}, sz = (k) => (z[k] ? `${bytes(z[k].bytes)} (${f(z[k].files)} file${z[k].files === 1 ? "" : "s"})` : "");
     $("data-body").innerHTML = `
 <h2>How the numbers are made</h2>
-<p class="fine">Left to right: what is collected, how the frame is built, how websites, notices, awards and project pages are read, and what this site holds. Hover a plate for its meaning; click a stage for the full explanation.</p>
+<p class="fine">Left to right: what is collected, how the frame is built, how websites, notices, awards and project pages are read, and what was covered. Hover a plate for its meaning; click a stage for the full explanation.</p>
 <div class="pipe-wrap"><div id="pipe-fig"></div></div>
 <div class="pipe-detail" id="pipe-detail"></div>
 

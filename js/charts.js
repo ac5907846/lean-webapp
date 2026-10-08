@@ -124,10 +124,24 @@ window.C = (function () {
     for (let i = 1; i < ends.length; i++) if (ends[i].yy - ends[i - 1].yy < 12) ends[i].yy = ends[i - 1].yy + 12;
     series.forEach((k) => {
       s.append("path").datum(k.values).attr("d", line).attr("fill", "none").attr("stroke", k.color).attr("stroke-width", k.width || 1.8);
-      s.selectAll(null).data(k.values).enter().append("circle").attr("cx", (v) => x(v.x)).attr("cy", (v) => y(v.y)).attr("r", (v) => (k.big && v.y > 0 ? 6 : 3)).attr("fill", k.color).attr("stroke", "#fff")
-        .on("mousemove", (ev, v) => showTip(ev, tip ? tip(k, v) : `<b>FY${v.x}</b>${k.name}: ${f(v.y)}${v.of ? ` of ${fmt(v.of)}` : ""}`)).on("mouseleave", hideTip);
+      s.selectAll(null).data(k.values).enter().append("circle").attr("cx", (v) => x(v.x)).attr("cy", (v) => y(v.y)).attr("r", (v) => (k.big && v.y > 0 ? 7 : 4.5)).attr("fill", k.color).attr("stroke", "#fff").attr("stroke-width", 1.2).attr("pointer-events", "none");
       const last = k.values[k.values.length - 1], e = ends.find((q) => q.k === k);
       s.append("text").attr("x", x(last.x) + 8).attr("y", e.yy + 4).attr("fill", k.color).attr("font-size", 10.5).text(k.name);
+    });
+    // one hover band per x value: the tooltip lists every series at that year (overlapping points read as one), a
+    // guide line marks the year, and the points of that year grow
+    const xv = [...new Set(xs)].sort((p, q) => p - q), half = xv.length > 1 ? (x(xv[1]) - x(xv[0])) / 2 : 20;
+    const guide = s.append("line").attr("y1", m.t).attr("y2", h - m.b).attr("stroke", "#9a978f").attr("stroke-dasharray", "3 3").attr("opacity", 0);
+    const one = (k, v) => (tip ? tip(k, v).replace(/^<b>[^<]*<\/b>[^:]*: /, "") : `${f(v.y)}${v.of ? ` of ${fmt(v.of)}` : ""}`);
+    xv.forEach((v0) => {
+      s.append("rect").attr("x", x(v0) - half).attr("y", m.t).attr("width", 2 * half).attr("height", h - m.b - m.t).attr("fill", "transparent")
+        .on("mousemove", (ev) => {
+          guide.attr("x1", x(v0)).attr("x2", x(v0)).attr("opacity", 1);
+          s.selectAll("circle").attr("r", function () { return Math.abs(+this.getAttribute("cx") - x(v0)) < .5 ? 7.5 : 4.5; });
+          const rows = series.map((k) => ({ k, v: k.values.find((p) => p.x === v0) })).filter((r) => r.v).sort((p, q) => q.v.y - p.v.y);
+          showTip(ev, `<b>FY${v0}</b>` + rows.map((r) => `<span style="color:${r.k.color}">\u25cf</span> ${r.k.name}: ${one(r.k, r.v)}`).join("<br>"));
+        })
+        .on("mouseleave", () => { guide.attr("opacity", 0); s.selectAll("circle").attr("r", 4.5); hideTip(); });
     });
     s.append("g").attr("class", "axis").attr("transform", `translate(0,${h - m.b})`).call(d3.axisBottom(x).ticks(9).tickFormat((d) => d));
     s.append("g").attr("class", "axis").attr("transform", `translate(${m.l},0)`).call(log ? d3.axisLeft(y).tickValues([0, 1, 3, 10, 30, 100, 300, 1000, 3000]).tickFormat(f) : d3.axisLeft(y).ticks(6).tickFormat(f));
