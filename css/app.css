@@ -199,3 +199,4 @@ th.sortable .arr { font-size: 9px; margin-left: 2px; }
 .heat td { padding: 3px 5px; }
 .heat td.r { line-height: 1.15; }
 .heat td .n { display: block; }
+.mapplay { position: absolute; top: 8px; right: 8px; z-index: 2; box-shadow: 0 1px 3px rgba(0,0,0,.08); }
