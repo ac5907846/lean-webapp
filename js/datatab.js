@@ -42,7 +42,7 @@ window.DataTab = (function () {
     const wa = z.web_archive ? z.web_archive.sub : {};
     return [
       { title: "Collect", sub: `${bytes(total)} as received`, kind: "source", plates: [
-          { g: "doc", l: "ENR Top 400 lists", v: sz("enr"), tip: "Three annual lists of the largest U.S. contractors (2023 to 2025): rank, headquarters, revenue, market shares." },
+          { g: "doc", l: "ENR Top 400 lists", v: sz("enr"), tip: "Annual lists of the largest U.S. contractors (2015 to 2026; the frame uses 2023 to 2025): rank, headquarters, revenue, market shares." },
           { g: "doc", l: "LCI directory", v: sz("lci"), tip: `Live corporate directory (${f(S.lci_members)} members) and archived directories 2013 to 2026.` },
           { g: "stack", l: "USAspending awards", v: sz("usaspending"), tip: "Every federal prime contract transaction, FY2008 to FY2026, one archive per fiscal year." },
           { g: "table", l: "SAM.gov entities", v: sz("sam_entity"), tip: "Monthly public extract of registered entities: UEI, address, website, business start." },
