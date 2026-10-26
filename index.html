@@ -4,201 +4,135 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Lean Construction Atlas</title>
-<meta name="description" content="Lean Construction Atlas: the current status of documented lean construction in the United States, 2008 to 2026, and a research agenda. Which organizations document lean and since when, where they are, which methods they name, what owners ask for, and the projects described as lean, with links to every source.">
-<link rel="preload" href="data/summary.json?v=18" as="fetch" crossorigin>
-<link rel="preload" href="data/orgs.json?v=18" as="fetch" crossorigin>
-<link rel="preload" href="data/us-states.json?v=18" as="fetch" crossorigin>
-<link rel="stylesheet" href="css/app.css?v=18">
+<meta name="description" content="Lean Construction Atlas: lean-related organizational signals of U.S. contractors (Lean Construction Institute membership and lean language on corporate websites) against their market positions in ENR Top 400 rankings 2001 to 2026 and their federal construction awards: market shares, delivery methods, trajectories, change orders and schedule extensions.">
+<link rel="preload" href="data/summary.json?v=19" as="fetch" crossorigin>
+<link rel="preload" href="data/wall.json?v=19" as="fetch" crossorigin>
+<link rel="stylesheet" href="css/app.css?v=19">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/topojson/3.0.2/topojson.min.js"></script>
 </head>
 <body>
 <header class="site">
   <div class="title">
     <h1>Lean Construction Atlas</h1>
-    <p class="sub" id="subtitle">Documented lean construction in the United States, 2008 to 2026: current status and a research agenda</p>
+    <p class="sub" id="subtitle">Lean-related signals of U.S. contractors: market positioning and project outcomes, ENR Top 400 rankings 2001 to 2026 and federal construction awards</p>
   </div>
   <nav class="tabs" id="tabs">
-    <a href="#landscape" data-tab="landscape">Landscape</a>
-    <a href="#organizations" data-tab="organizations">Organizations</a>
-    <a href="#methods" data-tab="methods">Methods</a>
-    <a href="#owners" data-tab="owners">Owners</a>
-    <a href="#projects" data-tab="projects">Projects</a>
+    <a href="#findings" data-tab="findings">Findings</a>
+    <a href="#contractors" data-tab="contractors">Contractors</a>
+    <a href="#markets" data-tab="markets">Markets</a>
+    <a href="#outcomes" data-tab="outcomes">Outcomes</a>
     <a href="#data" data-tab="data">Data</a>
   </nav>
 </header>
 
 <main id="main">
-  <section id="p-landscape" class="view">
+  <section id="p-findings" class="view">
     <div class="hero">
-      <div class="hero-map">
-        <div class="map-wrap"><svg id="hero-svg" viewBox="0 0 975 610" aria-label="Map of organizations"></svg><button class="pill mapplay" id="hero-play">Pause</button></div>
-        <div class="map-controls">
-          <div class="maplegend" id="hero-legend"></div>
-          <div class="chips" id="hero-groups">
-            <button class="chip on" data-g="lci">LCI members</button>
-            <button class="chip on" data-g="enr">ENR Top 400</button>
-            <button class="chip on" data-g="fed">Federal builders</button>
-          </div>
-          <div class="yearbar" id="hero-yearbar" hidden>
-            <span class="ylab">2008</span><input type="range" id="hero-year" min="2008" max="2026" value="2026"><span class="ylab">2026</span>
-            <span class="yval" id="hero-year-val">2026</span>
-          </div>
-        </div>
+      <div class="hero-fig">
+        <div class="wall-wrap"><canvas id="wall" aria-label="Every contractor on the ENR Top 400 lists, 2001 to 2026"></canvas><svg id="wall-svg"></svg><button class="pill mapplay" id="wall-play">Pause</button></div>
+        <div class="wall-legend" id="wall-legend"></div>
       </div>
-      <div class="hero-side">
-        <aside class="readout" id="hero-readout">
-          <div class="step" id="hero-step">The frame</div>
-          <div class="bignums" id="hero-nums"></div>
-          <div class="steps" id="hero-mode">
-            <button class="chip on" data-m="all">All organizations</button>
-            <button class="chip" data-m="observed">Website read</button>
-            <button class="chip" data-m="lean">Lean language</button>
-            <button class="chip" data-m="method">Named method</button>
-            <button class="chip" data-m="year">First commitment by year</button>
-          </div>
-          <p class="note" id="hero-note"></p>
-        </aside>
-        <figure class="card">
-          <figcaption>Lean language on archived websites, by group</figcaption>
-          <div id="fig-groups"></div>
-          <p class="fine">Organizations whose website was read (2008 to 2026 for the federal builders of the panel; 2024 to 2026 for the rest of the frame). Provisional: the dictionary is not yet validated.</p>
-        </figure>
-      </div>
+      <aside class="readout" id="hero-readout">
+        <div class="step" id="hero-step"></div>
+        <div class="bignums" id="hero-nums"></div>
+        <div class="steps" id="hero-mode"></div>
+        <p class="note" id="hero-note"></p>
+      </aside>
     </div>
-
-    <div class="masonry">
-      <figure class="card">
-        <figcaption>First documented public lean commitment, by year</figcaption>
-        <div id="fig-commit"></div>
-        <p class="fine">Federal builders of the panel with a dated commitment. A commitment is dated by the first observed year with lean language confirmed by a second page. Years without archive coverage are unknown, not zero; Common Crawl coverage starts in 2013.</p>
-      </figure>
-      <figure class="card">
-        <figcaption>LCI affiliation in the ENR Top 400, by dominant market and by size</figcaption>
-        <div id="fig-enr"></div>
-        <p class="fine">Share of ENR Top 400 contractors (2025 list) ever listed as an LCI member (2013 to 2026) and listed in 2026, with 95% Wilson intervals.</p>
-      </figure>
-      <figure class="card">
-        <figcaption>Lean Construction Institute directory: member types</figcaption>
-        <div id="fig-lci-types"></div>
-        <p class="fine">Corporate directory, 2026, by organization type; the second bar counts the members whose directory entry claims lean practice.</p>
-      </figure>
-      <figure class="card">
-        <figcaption>Lean Construction Institute directory: growth by cohort</figcaption>
-        <div id="fig-lci-growth"></div>
-        <p class="fine">Organizations listed each year, by the year first listed (archived directories 2013 to 2026; 2018 has no archive).</p>
-      </figure>
-    </div>
+    <div class="tiles" id="rq-tiles"></div>
   </section>
 
-  <section id="p-organizations" class="view" hidden>
+  <section id="p-contractors" class="view" hidden>
+    <div class="grid2 cols">
+      <figure class="card">
+        <figcaption>Lean-signal groups and market shares (Table 1)</figcaption>
+        <div id="fig-table1"></div>
+        <p class="fine">ENR Top 400 lists 2013 to 2025; federal construction awards started 2007 to 2025 of the comparable firms. Groups are read on the 2023 to 2025 lists: LCI membership from the directories 2013 to 2026, lean language from the archived corporate websites (provisional until the dictionary is validated).</p>
+      </figure>
+      <figure class="card">
+        <figcaption>Contractor profiles by lean signal (Figure 1)</figcaption>
+        <div class="chips" id="prof-split"></div>
+        <div id="fig-profile"></div>
+        <p class="fine">The 278 classified contractors on their latest ranking of 2023 to 2025: the share of each group within a category. Hover a bar for the counts.</p>
+      </figure>
+    </div>
+    <figure class="card">
+      <figcaption>Lean-related website content (Figure 2)</figcaption>
+      <div class="controls"><div class="chips" id="content-seg"></div><span class="count" id="content-note"></span></div>
+      <div id="fig-content"></div>
+      <p class="fine">Share of the firms that mention lean (118) whose pages name each item, by segment; area and number: percent of the segment’s firms. Hover a bubble for the counts.</p>
+    </figure>
     <div class="toolbar">
-      <input type="search" id="org-search" placeholder="Name, domain, city or state">
-      <div class="chips" id="org-groups">
-        <button class="chip on" data-g="lci">LCI members</button>
-        <button class="chip on" data-g="enr">ENR Top 400</button>
-        <button class="chip on" data-g="fed">Federal builders</button>
-      </div>
-      <select id="org-level">
-        <option value="any">Any website status</option>
-        <option value="observed">Website read</option>
-        <option value="lean">Lean language</option>
-        <option value="method">Named method</option>
-        <option value="dated">Dated commitment</option>
-        <option value="none">Read, no lean language</option>
+      <input type="search" id="firm-search" placeholder="Contractor name or state">
+      <div class="chips" id="firm-groups"></div>
+      <select id="firm-type"><option value="">All firm types</option></select>
+      <select id="firm-sort">
+        <option value="rank">Sort by ENR rank</option>
+        <option value="name">Sort by name</option>
+        <option value="lists">Sort by years ranked</option>
+        <option value="fa">Sort by federal awards</option>
+        <option value="meth">Sort by methods named</option>
       </select>
-      <select id="org-type"><option value="">All organization types</option></select>
-      <select id="org-state"><option value="">All states</option></select>
-      <span class="count" id="org-count"></span>
-      <button class="pill" id="org-download">Download the list (CSV)</button>
+      <span class="count" id="firm-count"></span>
+      <button class="pill" id="firm-download">Download the list (CSV)</button>
     </div>
     <div class="orgs">
-      <div class="orglist" id="org-list"></div>
-      <div class="orgdetail" id="org-detail"><p class="muted">Select an organization.</p></div>
+      <div class="orglist" id="firm-list"></div>
+      <div class="orgdetail" id="firm-detail"><p class="muted">Select a contractor.</p></div>
     </div>
   </section>
 
-  <section id="p-methods" class="view" hidden>
-    <div class="chips" id="meth-groups">
-      <button class="chip on lci" data-g="lci">LCI members</button>
-      <button class="chip on enr" data-g="enr">ENR Top 400, not LCI</button>
-      <button class="chip on fed" data-g="fed">Federal builders</button>
+  <section id="p-markets" class="view" hidden>
+    <div class="grid2 cols">
+      <figure class="card">
+        <figcaption>Contractor market shares (Figure 4)</figcaption>
+        <div id="fig-shares"></div>
+        <p class="fine">Each group’s percent of the column total: ENR Top 400 firm-lists, revenue and CMAR revenue (lists 2013 to 2025); comparable federal firms, their awards, award value, DB award value and CMAR awards (2007 to 2025). Fill: the group’s share of the column against its share of the firms (darker green: above; darker purple: below).</p>
+      </figure>
+      <figure class="card">
+        <figcaption>Federal delivery mix by group (Figure 5)</figcaption>
+        <div id="fig-delivery"></div>
+        <p class="fine">Award value by delivery method as recorded or coded from the award and its solicitation; DB includes orders under DB-only vehicles. Hover a segment for the value.</p>
+      </figure>
+    </div>
+    <figure class="card">
+      <figcaption>ENR revenue and rank by group and list year (Figure 6)</figcaption>
+      <div class="controls"><div class="chips" id="traj-metric"></div><div class="chips" id="traj-groups"></div></div>
+      <div id="fig-traj"></div>
+      <p class="fine">Groups read on the 2023 to 2025 lists, followed back through the earlier lists (firms ranked in 2023 to 2025 only). Dashed: every contractor on the list that was an LCI member at the time of the list, against the rest (all 1,005 series, 2013 to 2025).</p>
+    </figure>
+    <figure class="card"><figcaption>CMAR revenue specialization (Table 3 and S1)</figcaption><div class="scrollx" id="tab-rq2enr"></div></figure>
+    <div class="grid2 cols">
+      <figure class="card"><figcaption>Federal CMAR participation (Table 4)</figcaption><div class="scrollx" id="tab-rq2cmar"></div></figure>
+      <figure class="card"><figcaption>Market position and competitive trajectories (Table 6)</figcaption><div class="scrollx" id="tab-rq3"></div></figure>
+    </div>
+    <figure class="card"><figcaption>Federal DB participation (Table 5 and S3)</figcaption><div class="scrollx" id="tab-rq2db"></div></figure>
+    <p class="fine">Estimates against non-member-silent contractors with 95% intervals in brackets; * p &lt; .05, ** p &lt; .01, *** p &lt; .001 (wild cluster bootstrap, 9,999 draws). Column headings as in the article’s supplementary tables; hover a cell for the exact p.</p>
+  </section>
+
+  <section id="p-outcomes" class="view" hidden>
+    <figure class="card">
+      <figcaption>The main comparisons of the four research questions (Figure 7)</figcaption>
+      <div class="controls"><div class="chips" id="forest-rq"></div><span class="count" id="forest-note"></span></div>
+      <div id="fig-forest"></div>
+      <p class="fine">Position: the p value of each group’s difference against non-member-silent contractors, placed as a signed normal score; dark fill: p &lt; .05; the band: p ≥ .05. Hover a dot for the estimate, its interval and the sample.</p>
+    </figure>
+    <div class="grid2 cols">
+      <figure class="card"><figcaption>Federal construction awards (Table 2)</figcaption><div id="tab-rq1"></div></figure>
+      <figure class="card"><figcaption>Recorded change orders and schedule extensions (Table 7)</figcaption><div id="tab-rq4"></div></figure>
     </div>
     <div class="grid2 cols">
-      <div class="col">
-        <figure class="card">
-          <figcaption>Lean methods named on websites, organizations per method</figcaption>
-          <div id="fig-methods"></div>
-          <p class="fine">Any archived page of the organization, 2008 to 2026. Specific routines name lean construction practice on their own; generic tools count only on a page that also has lean language or a specific routine. Click a method to list the organizations.</p>
-        </figure>
-        <div class="card" id="meth-list"></div>
-      </div>
       <figure class="card">
-        <figcaption>Methods named together by the same organization</figcaption>
-        <div id="fig-cooc"></div>
-        <p class="fine">Diagonal: organizations naming the method; off the diagonal: organizations naming both. Methods named by 3 or more organizations in the chosen groups. Click a circle to list them.</p>
+        <figcaption>Robustness of the DBB change-order difference, any lean signal (Table S4)</figcaption>
+        <div id="fig-s4"></div>
+        <p class="fine">Each check: the estimate with its 95% interval (log change orders unless the row says otherwise); dark: p &lt; .05. The Poisson row is a rate ratio (1 = no difference).</p>
+      </figure>
+      <figure class="card">
+        <figcaption>Historical coverage and retention checks (Table S6)</figcaption>
+        <div id="tab-surv"></div>
+        <p class="fine">Upper rows: every contractor ranked 2013 to 2025, LCI membership at the time of each ranking. Lower rows: the contractors on the 2020 ranking, membership before the pandemic. Neither classification equals the four groups.</p>
       </figure>
     </div>
-    <figure class="card">
-      <figcaption>Year a method is first named, by organization (federal builders of the panel, 2008 to 2026)</figcaption>
-      <div id="fig-firstyear"></div>
-      <p class="fine">First archived year in which each organization’s site names the method. Archive coverage is thin before 2013 and uneven after; a first year is an upper bound on when the method was first named.</p>
-    </figure>
-  </section>
-
-  <section id="p-owners" class="view" hidden>
-    <div class="card intro">
-      <h2>Do owners ask for lean?</h2>
-      <p>Owners are the organizations that can require lean on their projects. The largest public owner in the United States is the federal government, whose construction solicitations are public with their full text. This view reads what those solicitations ask for, shows the only notices that name a lean method, how the awards of the panel firms are written, and which private and public owners have joined the Lean Construction Institute.</p>
-      <div class="bignums row" id="own-nums"></div>
-    </div>
-    <figure class="card">
-      <figcaption>What federal construction solicitations ask for, by fiscal year</figcaption>
-      <div class="controls">
-        <div class="chips" id="fed-terms"></div>
-        <div class="chips" id="fed-scale"><button class="chip on" data-s="share">Share of solicitations</button><button class="chip" data-s="count">Count</button></div>
-      </div>
-      <div id="fig-fed"></div>
-      <p class="fine">SAM.gov Contract Opportunities, construction notices (NAICS 23 and construction classification codes), FY2008 to FY2026; distinct solicitations with a full text. A term counts when the notice text names it. Lean methods: Last Planner, pull planning, target value design, Big Room, takt, choosing by advantages, Lean Construction Institute, lean construction. Pick the terms above; hover a point for the counts.</p>
-    </figure>
-    <div class="grid2">
-      <figure class="card">
-        <figcaption>The same terms by department, FY2008 to FY2026</figcaption>
-        <div id="fig-dep"></div>
-        <p class="fine">Share of each department’s solicitations naming the term (darker = larger share; hover for the counts); the ten departments with the most construction solicitations.</p>
-      </figure>
-      <figure class="card">
-        <figcaption>The only solicitations that name a lean method</figcaption>
-        <div id="fed-cases"></div>
-        <p class="fine">Two notices in nineteen fiscal years: a lean requirement is almost never written into a federal construction solicitation. Lean enters federal projects through the contractor, not the owner’s notice.</p>
-      </figure>
-    </div>
-    <figure class="card">
-      <figcaption>How the panel firms’ federal construction awards are written</figcaption>
-      <div class="chips" id="ct-dim"><button class="chip on" data-d="compete">Extent of competition</button><button class="chip" data-d="pricing">Pricing type</button><button class="chip" data-d="work">Kind of work</button></div>
-      <div class="grid2 tight"><div id="fig-contracts"></div><div id="fig-ct-year"></div></div>
-      <p class="fine">USAspending prime contract awards, NAICS 23, with corrected definitions (153,355 usable awards, FY2008 to FY2026); here the awards of the 444 panel firms. Pricing type, extent of competition and kind of work as recorded in FPDS; set-aside = awarded after exclusion of sources (small business and similar programs). Right: the share by fiscal year (years with 30 or more awards).</p>
-    </figure>
-    <figure class="card">
-      <figcaption>Owners that joined the Lean Construction Institute, 2026</figcaption>
-      <div class="grid2 tight owners"><div><div id="fig-owners"></div><div class="map-wrap small"><svg id="own-svg" viewBox="0 0 975 610" aria-label="Map of LCI owner members"></svg></div></div><div id="own-list"></div></div>
-      <p class="fine">Owner members of the LCI corporate directory by sector and on the map (headquarters). Click a sector to list its members; the organization name opens its page here, "LCI" its directory entry.</p>
-    </figure>
-  </section>
-
-  <section id="p-projects" class="view" hidden>
-    <div class="grid2 proj">
-      <figure class="card">
-        <figcaption>Projects described as lean on contractor websites</figcaption>
-        <div class="map-wrap small"><svg id="proj-svg" viewBox="0 0 975 610" aria-label="Map of lean projects"></svg></div>
-        <p class="fine">Project pages with lean language, read by three local language models with fixed categories and a verbatim quote checked against the page. Records so far come from the first six firms read; a hand check is pending.</p>
-      </figure>
-      <figure class="card">
-        <figcaption>Project types, owners and delivery methods</figcaption>
-        <div id="fig-projtypes"></div>
-      </figure>
-    </div>
-    <div class="cards" id="proj-cards"></div>
   </section>
 
   <section id="p-data" class="view" hidden>
@@ -208,15 +142,15 @@
 <div class="tip" id="tip" hidden></div>
 <footer class="site"><span id="foot"></span></footer>
 
-<script src="js/motion.js?v=18"></script>
-<script src="js/charts.js?v=18"></script>
-<script src="js/usmap.js?v=18"></script>
-<script src="js/landscape.js?v=18"></script>
-<script src="js/organizations.js?v=18"></script>
-<script src="js/methods.js?v=18"></script>
-<script src="js/owners.js?v=18"></script>
-<script src="js/projects.js?v=18"></script>
-<script src="js/datatab.js?v=18"></script>
-<script src="js/app.js?v=18"></script>
+<script src="js/motion.js?v=19"></script>
+<script src="js/charts.js?v=19"></script>
+<script src="js/tables.js?v=19"></script>
+<script src="js/wall.js?v=19"></script>
+<script src="js/findings.js?v=19"></script>
+<script src="js/contractors.js?v=19"></script>
+<script src="js/markets.js?v=19"></script>
+<script src="js/outcomes.js?v=19"></script>
+<script src="js/datatab.js?v=19"></script>
+<script src="js/app.js?v=19"></script>
 </body>
 </html>
