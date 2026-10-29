@@ -62,3 +62,5 @@ definitions and limits are folded, and the files table is gone. Second address: 
 sexsi.us zone; lean.praiser.us is the canonical site.
 
 2026-10-08: the site is named Lean Construction Atlas (owner); subtitle "current status and a research agenda"; the paper cites it by that name.
+- 2026-10-26: a study-aligned rebuild (v19: rank wall, contractors, markets, outcomes, data) was deployed for an hour and withdrawn at the owner's request (“trả lại web app cũ nhìn đẹp hơn”); it is kept in `_archive/2026-10-26_journal_app_v19/`. The v18 push had dropped the custom domain (no CNAME file in the repository); CNAME and .nojekyll restored the same day.
+2026-10-29 (owner): renamed Lean Project Delivery Atlas; subtitle “Documented lean practices in the United States, 2008 to 2026: current status and a research agenda”; v20.
