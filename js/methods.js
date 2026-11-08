@@ -1,10 +1,11 @@
-// Methods view: organizations per method (by group), the pairs named together, the organizations behind a method or
-// a pair (click), and the first year each method is named in the panel.
+// Practices view: firms per named practice (by group), the pairs named together, the firms behind a practice or a pair
+// (click), and the first year each practice is named in the panel.
 window.Methods = (function () {
   let m, orgs, G;
   const $ = (id) => document.getElementById(id);
   const groupsOn = new Set(["lci", "enr", "fed"]);
-  let pick = null;   // {a, b}: a method, or a pair of methods, whose organizations are listed
+  let pick = null;   // {a, b}: a practice, or a pair of practices, whose firms are listed
+  const SHORTG = { lci: "Member", enr: "Ranked, not member", fed: "Federal" };
 
   const pool = () => orgs.filter((d) => groupsOn.has(d.group) && d.methods && d.methods.length);
   const count = (rows) => { const c = {}; rows.forEach((d) => d.methods.forEach((k) => { c[k] = (c[k] || 0) + 1; })); return c; };
@@ -14,10 +15,10 @@ window.Methods = (function () {
     const rows0 = pool(), c = count(rows0);
     const rows = m.routines.map((k) => ({ label: m.names[k], key: k, values: { n: c[k] || 0 }, spec: m.specific.includes(k) })).filter((r) => r.values.n).sort((a, b) => b.values.n - a.values.n);
     const el = $("fig-methods");
-    C.hbars(el, rows, [{ key: "n", name: `organizations naming the method (${C.fmt(rows0.length)} name at least one)`, fill: "#f4a259", dark: "#a9491a" }],
+    C.hbars(el, rows, [{ key: "n", name: `firms naming the practice (${C.fmt(rows0.length)} name at least one)`, fill: "#f4a259", dark: "#a9491a" }],
       { share: false, rowH: 14, gap: 6, left: 170, labelN: false, onClick: (r) => { pick = pick && pick.a === r.key && !pick.b ? null : { a: r.key }; redraw(); }, selected: (r) => pick && pick.a === r.key && !pick.b });
     el.querySelectorAll("svg text").forEach((t) => { const r = rows.find((x) => x.label === t.textContent); if (r && !r.spec) t.setAttribute("fill", "#777"); });
-    const note = document.createElement("div"); note.className = "legend"; note.innerHTML = `<span style="--sw:#1c1c1c;--sb:#1c1c1c">specific routines</span><span style="--sw:#999;--sb:#999">generic tools</span>`;
+    const note = document.createElement("div"); note.className = "legend"; note.innerHTML = `<span style="--sw:#1c1c1c;--sb:#1c1c1c">named practices</span><span style="--sw:#999;--sb:#999">general planning and improvement tools</span>`;
     el.appendChild(note);
   }
   function figCooc() {
@@ -27,12 +28,12 @@ window.Methods = (function () {
   }
   function list() {
     const el = $("meth-list");
-    if (!pick) { el.innerHTML = '<p class="muted">Click a method, or a pair in the matrix, to list the organizations that name it.</p>'; return; }
+    if (!pick) { el.innerHTML = '<p class="muted">Click a practice, or a pair in the matrix, to list the firms that name it.</p>'; return; }
     const rows = pool().filter((d) => d.methods.includes(pick.a) && (!pick.b || d.methods.includes(pick.b))).sort((a, b) => a.name.localeCompare(b.name));
     const head = pick.b ? `${m.names[pick.a]} and ${m.names[pick.b]}` : m.names[pick.a];
-    el.innerHTML = `<h3>${head}: ${rows.length} organization${rows.length === 1 ? "" : "s"} <a href="#" id="meth-clear" class="muted">clear</a></h3>` +
-      `<table><tr><th>Organization</th><th>Group</th><th>State</th><th class="num">Methods named</th></tr>` +
-      rows.map((d) => `<tr><td><a href="#organizations/${encodeURIComponent(d.id)}">${d.name}</a></td><td><span class="dot ${d.group}"></span>${{ lci: "LCI", enr: "ENR, not LCI", fed: "Federal" }[d.group]}</td><td>${d.state || ""}</td><td class="num">${d.methods.length}</td></tr>`).join("") + `</table>`;
+    el.innerHTML = `<h3>${head}: ${rows.length} firm${rows.length === 1 ? "" : "s"} <a href="#" id="meth-clear" class="muted">clear</a></h3>` +
+      `<table><tr><th>Firm</th><th>Group</th><th>State</th><th class="num">Practices</th></tr>` +
+      rows.map((d) => `<tr><td><a href="#organizations/${encodeURIComponent(d.id)}">${d.name}</a></td><td><span class="dot ${d.group}"></span>${SHORTG[d.group]}</td><td>${d.state || ""}</td><td class="num">${d.methods.length}</td></tr>`).join("") + `</table>`;
     $("meth-clear").addEventListener("click", (ev) => { ev.preventDefault(); pick = null; redraw(); });
   }
   function figFirst() {
@@ -48,7 +49,7 @@ window.Methods = (function () {
       c.classList.toggle("on"); if (c.classList.contains("on")) groupsOn.add(c.dataset.g); else groupsOn.delete(c.dataset.g); redraw();
     }));
     const c0 = count(pool());
-    pick = { a: m.routines.slice().sort((x, y) => (c0[y] || 0) - (c0[x] || 0))[0] };   // start on the most named method
+    pick = { a: m.routines.slice().sort((x, y) => (c0[y] || 0) - (c0[x] || 0))[0] };   // start on the most named practice
     redraw(); figFirst();
     C.onResize(() => { figMethods(); figCooc(); figFirst(); });
   }

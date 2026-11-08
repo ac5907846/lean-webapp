@@ -1,33 +1,36 @@
-// Organizations view: a filtered, sorted list with a detail panel (profile, LCI years, year-by-year coverage strip,
-// methods named).
+// Firms view: a filtered, sorted list with a detail panel (profile, institute membership years, year-by-year coverage
+// strip, practices named, archived pages, federal awards).
 window.Organizations = (function () {
   let orgs, years, names, selected = null, shown = 150;
   const $ = (id) => document.getElementById(id);
   const G = C.GROUP;
   const groupsOn = new Set(["lci", "enr", "fed"]);
-  const LVL = ["read, no lean language", "general lean language", "names a lean routine", "three or more routines on one page"];
-  const SHORT = { "General contractors and construction managers": "GC / CM", "Specialty trade contractors": "Trade", "Lean and management consultants": "Consultant",
+  const LVL = C.LVL;
+  const TYPE = C.TYPE;
+  const SHORT = { "General contractors and construction managers": "Builder / PM", "Specialty trade contractors": "Trade", "Lean and management consultants": "Consultant",
                   "Architects and engineers": "A/E", "Owners": "Owner", "Technology firms": "Technology", "Associations and others": "Association", "Manufacturers and suppliers": "Supplier", "Not classified": "" };
-  const LINKS = { website: "website", lci: "LCI directory entry", enr: "ENR Top 400 list (2025 PDF)", usaspending: "USAspending recipient profile" };
+  const LINKS = { website: "website", lci: "LCI directory entry", enr: "ENR Top 400 ranking (2025 PDF)", usaspending: "USAspending recipient profile" };
+  const WORK = { "New construction": "New facilities", "Maintenance, repair, alteration": "Maintenance, repair, alteration" };
 
   function csv(rows) {
     const cols = ["name", "domain", "type", "group", "city", "state", "enr_rank", "revenue_musd", "market", "lci_first_year", "fed_awards", "fed_value_musd", "pages", "recent_pages", "level", "commit_year", "routine_year", "methods"];
     const esc = (v) => (v == null ? "" : `"${String(Array.isArray(v) ? v.join(";") : v).replace(/"/g, '""')}"`);
-    const lines = [cols.join(",")].concat(rows.map((d) => cols.map((c) => esc(c === "group" ? G[d.group].name : d[c])).join(",")));
+    const val = (d, c) => (c === "group" ? G[d.group].name : c === "type" ? TYPE[d.type] || d.type : c === "methods" && d.methods ? d.methods.map((m) => names[m] || m) : d[c]);
+    const lines = [cols.join(",")].concat(rows.map((d) => cols.map((c) => esc(val(d, c))).join(",")));
     const blob = new Blob([lines.join("\n")], { type: "text/csv" });
-    const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "lean_construction_organizations.csv"; a.click();
+    const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "management_signals_firms.csv"; a.click();
   }
 
-  function shares(obj) {
+  function shares(obj, map = {}) {
     const tot = Object.values(obj).reduce((a, b) => a + b, 0);
-    return Object.entries(obj).sort((a, b) => b[1] - a[1]).map(([k, v]) => `<div class="share"><span class="k">${k}</span><span class="bar"><span style="width:${Math.round(100 * v / tot)}%"></span></span><span class="v">${Math.round(100 * v / tot)}%</span></div>`).join("");
+    return Object.entries(obj).sort((a, b) => b[1] - a[1]).map(([k, v]) => `<div class="share"><span class="k">${map[k] || k}</span><span class="bar"><span style="width:${Math.round(100 * v / tot)}%"></span></span><span class="v">${Math.round(100 * v / tot)}%</span></div>`).join("");
   }
 
   function filtered() {
     const q = $("org-search").value.trim().toLowerCase();
     const lv = $("org-level").value, st = $("org-state").value, ty = $("org-type").value;
     let rows = orgs.filter((d) => groupsOn.has(d.group));
-    if (ty) rows = rows.filter((d) => d.type === ty);
+    if (ty) rows = rows.filter((d) => (TYPE[d.type] || d.type) === ty);
     if (q) rows = rows.filter((d) => [d.name, d.domain, d.city, d.state].filter(Boolean).join(" ").toLowerCase().includes(q));
     if (st) rows = rows.filter((d) => d.state === st);
     if (lv === "observed") rows = rows.filter((d) => d.level != null);
@@ -42,8 +45,8 @@ window.Organizations = (function () {
 
   // Column sort: a click on a header sorts by it (counts descending first, text and years ascending first), a second
   // click flips the direction. Missing values sort last in both directions.
-  const COLS = [["name", "Organization"], ["type", "Type"], ["state", "State"], ["rank", "ENR rank", "num"], ["revenue", "Revenue $M", "num"], ["awards", "Federal awards", "num"],
-                ["pages", "Pages read", "num"], ["level", "Lean"], ["commit", "Committed", "num"], ["methods", "Methods", "num"]];
+  const COLS = [["name", "Firm"], ["type", "Type"], ["state", "State"], ["rank", "ENR rank", "num"], ["revenue", "Revenue $M", "num"], ["awards", "Federal awards", "num"],
+                ["pages", "Pages read", "num"], ["level", "Lean"], ["commit", "Committed", "num"], ["methods", "Practices", "num"]];
   const DESC_FIRST = new Set(["revenue", "awards", "pages", "level", "methods"]);
   let sortKey = "name", sortDesc = false;
   const last = (v) => (v == null ? (sortDesc ? -Infinity : Infinity) : v);
@@ -61,11 +64,11 @@ window.Organizations = (function () {
 
   function renderList() {
     const rows = filtered();
-    $("org-count").textContent = `${C.fmt(rows.length)} organizations`;
+    $("org-count").textContent = `${C.fmt(rows.length)} firms`;
     const el = $("org-list");
-    const head = `<tr>${COLS.map(([k, label, cls]) => `<th class="sortable ${cls || ""}" data-k="${k}" title="Sort by ${label.toLowerCase()}">${label}${k === sortKey ? `<span class="arr">${sortDesc ? "\u25bc" : "\u25b2"}</span>` : ""}</th>`).join("")}</tr>`;
+    const head = `<tr>${COLS.map(([k, label, cls]) => `<th class="sortable ${cls || ""}" data-k="${k}" title="Sort by ${label.toLowerCase()}">${label}${k === sortKey ? `<span class="arr">${sortDesc ? "▼" : "▲"}</span>` : ""}</th>`).join("")}</tr>`;
     const body = rows.slice(0, shown).map((d) => `<tr data-id="${d.id}" class="${selected && selected.id === d.id ? "sel" : ""}">
-      <td><span class="dot ${d.group}"></span>${d.name}</td><td class="muted">${SHORT[d.type] || d.type}</td><td>${d.state || ""}</td><td class="num">${d.enr_rank || ""}</td><td class="num">${d.revenue_musd ? C.fmt(Math.round(d.revenue_musd)) : ""}</td>
+      <td><span class="dot ${d.group}"></span>${d.name}</td><td class="muted">${SHORT[d.type] ?? (TYPE[d.type] || d.type)}</td><td>${d.state || ""}</td><td class="num">${d.enr_rank || ""}</td><td class="num">${d.revenue_musd ? C.fmt(Math.round(d.revenue_musd)) : ""}</td>
       <td class="num">${d.fed_awards || ""}</td><td class="num">${(d.pages || 0) + (d.recent_pages || 0) || ""}</td><td>${lvlTag(d)}</td><td class="num">${d.commit_year || ""}</td><td class="num">${d.methods && d.methods.length ? d.methods.length : ""}</td></tr>`).join("");
     el.innerHTML = `<table>${head}${body}</table>` + (rows.length > shown ? `<div class="more"><button class="pill" id="org-more">Show ${Math.min(150, rows.length - shown)} more</button></div>` : "");
     el.querySelectorAll("tr[data-id]").forEach((tr) => tr.addEventListener("click", () => select(tr.dataset.id)));
@@ -82,35 +85,35 @@ window.Organizations = (function () {
 
   function renderDetail() {
     const d = selected, el = $("org-detail");
-    if (!d) { el.innerHTML = '<p class="muted">Select an organization.</p>'; return; }
+    if (!d) { el.innerHTML = '<p class="muted">Select a firm.</p>'; return; }
     const row = (k, v) => (v == null || v === "" ? "" : `<dt>${k}</dt><dd>${v}</dd>`);
     const pct = (v) => (v == null ? null : Math.round(100 * v) + "%");
-    let h = `<h2>${d.name}</h2><div class="dom">${d.domain || ""}${d.domain ? " \u00b7 " : ""}<span class="dot ${d.group}"></span>${G[d.group].name}${d.lci_type ? " \u00b7 " + d.lci_type.toLowerCase() : ""}</div>`;
-    h += `<dl>${row("Headquarters", [d.city, d.state, d.country !== "US" ? d.country : null].filter(Boolean).join(", "))}${row("Organization type", d.org_type)}`;
-    h += `${row("ENR Top 400 rank", d.enr_rank ? `${d.enr_rank} (revenue $${C.fmt(Math.round(d.revenue_musd))} million)` : null)}${row("Dominant market", d.market)}`;
-    h += `${row("General building", pct(d.pct_general_building != null ? d.pct_general_building / 100 : null))}${row("CM at risk", pct(d.pct_cm_at_risk != null ? d.pct_cm_at_risk / 100 : null))}`;
-    h += `${row("In an LCI list", d.lci_first_year ? `since ${d.lci_first_year}${d.in_lci ? ", listed in 2026" : ", not listed in 2026"}` : d.in_lci ? "listed in 2026" : null)}`;
-    h += `${row("Usable federal awards", d.fed_awards ? `${d.fed_awards} (${d.fed_first_year} to ${d.fed_last_year}, $${C.fmt(Math.round(d.fed_value_musd))} million; DoD ${pct(d.share_dod)})` : null)}`;
+    let h = `<h2>${d.name}</h2><div class="dom">${d.domain || ""}${d.domain ? " · " : ""}<span class="dot ${d.group}"></span>${G[d.group].name}${d.lci_type ? " · " + (TYPE[d.lci_type] || d.lci_type).toLowerCase() : ""}</div>`;
+    h += `<dl>${row("Headquarters", [d.city, d.state, d.country !== "US" ? d.country : null].filter(Boolean).join(", "))}${row("Organization type", TYPE[d.type] || d.type)}`;
+    h += `${row("Industry ranking (ENR Top 400)", d.enr_rank ? `rank ${d.enr_rank}, revenue $${C.fmt(Math.round(d.revenue_musd))} million` : null)}${row("Dominant market", C.MARKET[d.market] || d.market)}`;
+    h += `${row("General building share", pct(d.pct_general_building != null ? d.pct_general_building / 100 : null))}${row("CMAR share of revenue", pct(d.pct_cm_at_risk != null ? d.pct_cm_at_risk / 100 : null))}`;
+    h += `${row("Institute membership (LCI)", d.lci_first_year ? `listed since ${d.lci_first_year}${d.in_lci ? ", listed in 2026" : ", not listed in 2026"}` : d.in_lci ? "listed in 2026" : null)}`;
+    h += `${row("Federal project awards", d.fed_awards ? `${d.fed_awards} (${d.fed_first_year} to ${d.fed_last_year}, $${C.fmt(Math.round(d.fed_value_musd))} million; Department of Defense ${pct(d.share_dod)})` : null)}`;
     h += `${row("Business start (SAM)", d.entity_start_year)}</dl>`;
-    h += `<h3>Website, lean construction</h3>`;
+    h += `<h3>Corporate website: references to lean project delivery</h3>`;
     if (d.level == null) h += `<p class="muted">Website not read (no archived pages, or no domain).</p>`;
     else {
       h += `<dl>${row("Highest level found", `<span class="lvl l${d.level}">${d.level}</span> ${LVL[d.level]}`)}`;
       if (d.panel) h += `${row("Archived pages, 2008 to 2026", `${C.fmt(d.pages)} (${d.years_observed} years observed, ${d.first_observed} to ${d.last_observed})`)}`;
       if (d.recent_pages) h += `${row("Recent pages, 2024 to 2026", C.fmt(d.recent_pages))}`;
-      if (d.commit_year) h += `${row("First documented commitment", `${d.commit_year}${d.left_censored ? " (first observed year: left-censored)" : ""}`)}${row("First named routine", d.routine_year)}${row("Three or more routines", d.system_year)}${row("Persistence", pct(d.persistence))}${row("Stable, 5+ awards each side", d.gate ? "yes (gate passed)" : d.stable ? "stable, too few awards on a side" : "no")}`;
+      if (d.commit_year) h += `${row("First observed commitment", `${d.commit_year}${d.left_censored ? " (first observed year: left-censored)" : ""}`)}${row("First named practice", d.routine_year)}${row("Three or more practices", d.system_year)}${row("Persistence", pct(d.persistence))}`;
       h += `</dl>`;
       if (d.panel && years.domains[d.domain]) {
         const s = years.domains[d.domain];
-        h += `<div class="strip">${[...s].map((c, i) => `<div class="y ${c === "u" ? "u" : c === "n" ? "n" : "l" + c}" title="${years.years[i]}: ${years.codes[c]}"></div>`).join("")}</div>`;
+        h += `<div class="strip">${[...s].map((c, i) => `<div class="y ${c === "u" ? "u" : c === "n" ? "n" : "l" + c}" title="${years.years[i]}: ${C.CODES[c] || years.codes[c]}"></div>`).join("")}</div>`;
         h += `<div class="striplab">${years.years.map((y) => (y % 3 === 2 ? `<span>${y}</span>` : "<span></span>")).join("")}</div>`;
-        h += `<p class="fine">Each cell is a year: hatched = no archive coverage (unknown), white = observed without lean language, yellow to red = highest level found that year.</p>`;
+        h += `<p class="fine">Each cell is a year: hatched = no archive coverage (unknown), white = observed without a lean reference, yellow to red = highest level found that year.</p>`;
       }
-      if (d.methods && d.methods.length) h += `<h3>Methods named</h3><div class="tags">${d.methods.map((m) => `<span class="tag">${names[m] || m}</span>`).join("")}</div>`;
-      if (d.pages_evidence) h += `<h3>Archived pages with lean language</h3><ul class="pages">${d.pages_evidence.map((p) => `<li><a href="${p.link}" target="_blank" rel="noopener">${p.url.replace(/^https?:\/\/(www\.)?/, "").slice(0, 70)}</a> <span class="muted">${p.year}, ${p.source}, level ${p.level}</span> <a class="muted" href="${p.url}" target="_blank" rel="noopener">live</a></li>`).join("")}</ul><p class="fine">The page link opens the archived copy in the Wayback Machine (for pages read from Common Crawl, the capture closest to that year, if the Wayback Machine has one); "live" opens the current page.</p>`;
+      if (d.methods && d.methods.length) h += `<h3>Practices named</h3><div class="tags">${d.methods.map((m) => `<span class="tag">${names[m] || m}</span>`).join("")}</div>`;
+      if (d.pages_evidence) h += `<h3>Archived pages with lean references</h3><ul class="pages">${d.pages_evidence.map((p) => `<li><a href="${p.link}" target="_blank" rel="noopener">${p.url.replace(/^https?:\/\/(www\.)?/, "").slice(0, 70)}</a> <span class="muted">${p.year}, ${p.source}, level ${p.level}</span> <a class="muted" href="${p.url}" target="_blank" rel="noopener">live</a></li>`).join("")}</ul><p class="fine">The page link opens the archived copy in the Internet Archive (for pages read from Common Crawl, the capture closest to that year, if the archive has one); "live" opens the current page.</p>`;
     }
     if (d.contracts) {
-      h += `<h3>Usable federal awards: contract types</h3>${shares(d.contracts.pricing)}<div class="gap"></div>${shares(d.contracts.compete)}<div class="gap"></div>${shares(d.contracts.work)}`;
+      h += `<h3>Federal project awards: contract characteristics</h3>${shares(d.contracts.pricing)}<div class="gap"></div>${shares(d.contracts.compete)}<div class="gap"></div>${shares(d.contracts.work, WORK)}`;
     }
     if (d.links) h += `<h3>Sources</h3><div class="tags">${Object.entries(d.links).map(([k, u]) => `<a class="tag" href="${u}" target="_blank" rel="noopener">${LINKS[k] || k}</a>`).join("")}</div>`;
     el.innerHTML = h;
@@ -120,7 +123,7 @@ window.Organizations = (function () {
     orgs = data.orgs; years = data.years; names = data.methods.names;
     const states = [...new Set(orgs.map((d) => d.state).filter(Boolean))].sort();
     $("org-state").innerHTML = '<option value="">All states</option>' + states.map((s) => `<option>${s}</option>`).join("");
-    const types = [...new Set(orgs.map((d) => d.type).filter(Boolean))].sort();
+    const types = [...new Set(orgs.map((d) => TYPE[d.type] || d.type).filter(Boolean))].sort();
     $("org-type").innerHTML = '<option value="">All organization types</option>' + types.map((s) => `<option>${s}</option>`).join("");
     ["org-search", "org-level", "org-state", "org-type"].forEach((id) => $(id).addEventListener("input", () => { shown = 150; renderList(); }));
     $("org-download").addEventListener("click", () => csv(filtered()));

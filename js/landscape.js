@@ -26,12 +26,12 @@ window.Landscape = (function () {
   }
 
   function tipHtml(d) {
-    const lvl = d.level == null ? "website not read" : ["read, no lean language", "general lean language", "names a lean routine", "names three or more routines"][d.level];
+    const lvl = d.level == null ? "website not read" : C.LVL[d.level];
     const bits = [G[d.group].name, [d.city, d.state].filter(Boolean).join(", ")];
-    if (d.enr_rank) bits.push(`ENR rank ${d.enr_rank}, $${C.fmt(Math.round(d.revenue_musd))} million`);
-    if (d.fed_awards) bits.push(`${d.fed_awards} usable federal awards`);
-    if (d.commit_year) bits.push(`first documented commitment ${d.commit_year}${d.left_censored ? " (left-censored)" : ""}`);
-    return `<b>${d.name}</b><span class="m">${bits.filter(Boolean).join(" \u00b7 ")}</span><br>${lvl}${d.methods && d.methods.length ? "<br>" + d.methods.map((m) => M_NAMES[m] || m).join(", ") : ""}`;
+    if (d.enr_rank) bits.push(`ranked ${d.enr_rank}, revenue $${C.fmt(Math.round(d.revenue_musd))} million`);
+    if (d.fed_awards) bits.push(`${d.fed_awards} federal project awards`);
+    if (d.commit_year) bits.push(`first observed commitment ${d.commit_year}${d.left_censored ? " (left-censored)" : ""}`);
+    return `<b>${d.name}</b><span class="m">${bits.filter(Boolean).join(" · ")}</span><br>${lvl}${d.methods && d.methods.length ? "<br>" + d.methods.map((m) => M_NAMES[m] || m).join(", ") : ""}`;
   }
   let M_NAMES = {};
 
@@ -59,11 +59,11 @@ window.Landscape = (function () {
   const groupDots = () => ["lci", "enr", "fed"].map((g) => `<div>${dot(G[g].fill, G[g].dark, 3.5)}${G[g].name}</div>`).join("");
   const notRead = `<div>${dot("#fff", "#ccc", 2)}website not read</div>`;
   const LEGEND = {
-    all: () => `<div class="t">One dot per organization, at its headquarters</div>${groupDots()}`,
+    all: () => `<div class="t">One dot per firm, at its headquarters</div>${groupDots()}`,
     observed: () => `<div class="t">Archived website read</div>${groupDots()}${notRead}`,
-    lean: () => `<div class="t">Highest level of lean language found</div><div>${dot(C.LEVEL[1], "#7a3b12", 5)}general lean language</div><div>${dot(C.LEVEL[2], "#7a3b12", 6)}names a lean routine</div><div>${dot(C.LEVEL[3], "#7a3b12", 7)}three or more routines on one page</div><div>${dot("#fff", "#888", 2.5)}read, no lean language (color of the group)</div>${notRead}`,
-    method: () => `<div class="t">Named lean routines</div><div>${dot(C.LEVEL[2], "#7a3b12", 6.5)}names a lean routine</div><div>${dot(C.LEVEL[3], "#7a3b12", 7.5)}three or more routines on one page</div><div>${dot("#fff", "#888", 2.5)}read, no routine named</div>${notRead}`,
-    year: () => `<div class="t">Federal builders in the panel, by year</div><div>${dot("#c8553d", "#7a1f10", 8)}first documented commitment this year</div><div>${dot("#c8553d", "#7a1f10", 5)}committed in an earlier year</div><div>${dot("#fff", "#888", 2.5)}observed, no lean language yet</div><div>${dot("#fff", "#ddd", 1.6)}not observed yet, or not in the panel</div>`,
+    lean: () => `<div class="t">Highest level of lean reference found</div><div>${dot(C.LEVEL[1], "#7a3b12", 5)}general lean reference</div><div>${dot(C.LEVEL[2], "#7a3b12", 6)}names a lean practice</div><div>${dot(C.LEVEL[3], "#7a3b12", 7)}three or more practices on one page</div><div>${dot("#fff", "#888", 2.5)}read, no lean reference (color of the group)</div>${notRead}`,
+    method: () => `<div class="t">Named lean practices</div><div>${dot(C.LEVEL[2], "#7a3b12", 6.5)}names a lean practice</div><div>${dot(C.LEVEL[3], "#7a3b12", 7.5)}three or more practices on one page</div><div>${dot("#fff", "#888", 2.5)}read, no practice named</div>${notRead}`,
+    year: () => `<div class="t">Federal award recipients in the panel, by year</div><div>${dot("#c8553d", "#7a1f10", 8)}first observed commitment this year</div><div>${dot("#c8553d", "#7a1f10", 5)}committed in an earlier year</div><div>${dot("#fff", "#888", 2.5)}observed, no lean reference yet</div><div>${dot("#fff", "#ddd", 1.6)}not observed yet, or not in the panel</div>`,
   };
   function setMode(m) {
     mode = m;
@@ -76,36 +76,36 @@ window.Landscape = (function () {
 
   function stepAll() {
     setMode("all"); draw();
-    readout("The frame", [
-      { v: S.organizations, l: "organizations: ENR Top 400 contractors, LCI corporate members, and federal construction contractors with usable awards" },
-      { v: S.by_group.lci, l: "LCI members", cls: "lci" }, { v: S.by_group.enr, l: "ENR Top 400, not LCI", cls: "enr" }, { v: S.by_group.fed, l: "federal builders, neither", cls: "fed" },
-    ], `${C.fmt(S.with_place)} placed by headquarters; ${S.states} states.`);
+    readout("The firms", [
+      { v: S.organizations, l: "U.S. project-based firms: the ENR Top 400 rankings, the LCI corporate directory, and other recipients of federal project awards" },
+      { v: S.by_group.lci, l: "institute members", cls: "lci" }, { v: S.by_group.enr, l: "ranked firms, not members", cls: "enr" }, { v: S.by_group.fed, l: "other federal award recipients", cls: "fed" },
+    ], `${C.fmt(S.with_place)} placed by headquarters; ${S.states} states. Two publicly observable credentials: professional institute membership and the firm’s own website references to lean project delivery.`);
   }
   function stepObserved() {
     setMode("observed"); draw();
     readout("Websites read", [
-      { v: S.observed, l: "organizations whose archived website was read" },
-      { v: S.panel_pages, l: "archived pages, 2008 to 2026, federal builders (Wayback Machine and Common Crawl)" },
+      { v: S.observed, l: "firms whose archived corporate website was read" },
+      { v: S.panel_pages, l: "archived pages, 2008 to 2026, federal award recipients of the panel (Internet Archive and Common Crawl)" },
       { v: S.recent_pages, l: "recent pages, 2024 to 2026, the rest of the frame (Common Crawl)" },
-    ], "Pages are coded with a dictionary of lean construction terms; the texts themselves are not published.");
+    ], "Pages are read with a dictionary of lean project delivery terms; the texts themselves are not published.");
   }
   function stepLean() {
     setMode("lean"); draw();
-    readout("Lean language", [
-      { v: S.any_lean, l: `of ${S.observed} organizations read say lean construction on their site` },
-      { v: gs.lci.n ? 100 * gs.lci.any_lean / gs.lci.n : 0, suffix: "%", l: `of LCI members read (${gs.lci.any_lean} of ${gs.lci.n})`, cls: "lci" },
-      { v: gs.enr.n ? 100 * gs.enr.any_lean / gs.enr.n : 0, suffix: "%", l: `of ENR Top 400 firms read, not LCI (${gs.enr.any_lean} of ${gs.enr.n})`, cls: "enr" },
-      { v: gs.fed.n ? 100 * gs.fed.any_lean / gs.fed.n : 0, suffix: "%", l: `of other federal builders read (${gs.fed.any_lean} of ${gs.fed.n})`, cls: "fed" },
-    ], "Yellow: general lean language; orange: a named routine; red: three or more routines on one page.");
+    readout("Website references", [
+      { v: S.any_lean, l: `of ${S.observed} firms read refer to lean practices on their site` },
+      { v: gs.lci.n ? 100 * gs.lci.any_lean / gs.lci.n : 0, suffix: "%", l: `of institute members read (${gs.lci.any_lean} of ${gs.lci.n})`, cls: "lci" },
+      { v: gs.enr.n ? 100 * gs.enr.any_lean / gs.enr.n : 0, suffix: "%", l: `of ranked firms read, not members (${gs.enr.any_lean} of ${gs.enr.n})`, cls: "enr" },
+      { v: gs.fed.n ? 100 * gs.fed.any_lean / gs.fed.n : 0, suffix: "%", l: `of other federal award recipients read (${gs.fed.any_lean} of ${gs.fed.n})`, cls: "fed" },
+    ], "Yellow: a general lean reference; orange: a named practice; red: three or more practices on one page.");
   }
   function stepMethod() {
     setMode("method"); draw();
-    readout("Named methods", [
-      { v: S.named_method, l: "organizations name a lean routine (Last Planner, pull planning, target value design, takt ...)" },
-      { v: S.system_level, l: "name three or more routines on one page" },
-      { v: gs.lci.n ? 100 * gs.lci.named_method / gs.lci.n : 0, suffix: "%", l: "of LCI members read", cls: "lci" },
-      { v: gs.enr.n ? 100 * gs.enr.named_method / gs.enr.n : 0, suffix: "%", l: "of ENR Top 400 firms read, not LCI", cls: "enr" },
-    ], "ENR firms outside LCI often use lean language without naming a method; LCI members name methods.");
+    readout("Named practices", [
+      { v: S.named_method, l: "firms name a lean practice (Last Planner System, pull planning, target value design, takt ...)" },
+      { v: S.system_level, l: "name three or more practices on one page" },
+      { v: gs.lci.n ? 100 * gs.lci.named_method / gs.lci.n : 0, suffix: "%", l: "of institute members read", cls: "lci" },
+      { v: gs.enr.n ? 100 * gs.enr.named_method / gs.enr.n : 0, suffix: "%", l: "of ranked firms read, not members", cls: "enr" },
+    ], "Ranked firms outside the institute often refer to lean without naming a practice; members name practices.");
   }
   let yearTimer = null;
   function stepYear(animate) {
@@ -115,10 +115,10 @@ window.Landscape = (function () {
       year = y; $("hero-year").value = y; $("hero-year-val").textContent = y; draw(180);
       const dated = orgs.filter((d) => groupsOn.has(d.group) && d.panel && d.commit_year != null && d.commit_year <= y).length;
       const seen = orgs.filter((d) => groupsOn.has(d.group) && d.panel && d.first_observed != null && d.first_observed <= y).length;
-      readout("First documented commitment", [
-        { v: y, l: "year", raw: true }, { v: dated, l: "federal builders with a documented commitment by this year" }, { v: seen, l: "federal builders whose site is observed by this year" },
-        { v: S.dated, l: "dated in all, of 444 federal builders in the panel" },
-      ], "Red: committed by this year (large: this year). White: observed, no lean language yet. The first observed year can be the commitment year (left-censored).");
+      readout("First observed commitment", [
+        { v: y, l: "year", raw: true }, { v: dated, l: "federal award recipients with an observed commitment by this year" }, { v: seen, l: "federal award recipients whose site is observed by this year" },
+        { v: S.dated, l: `dated in all, of ${S.panel_domains} federal award recipients in the panel` },
+      ], "Red: committed by this year (large: this year). White: observed, no lean reference yet. The first observed year can be the commitment year (left-censored): it does not establish when the commitment was first made.");
     };
     if (animate && !M.reduced) {
       let y = 2008; run(y);
@@ -146,10 +146,11 @@ window.Landscape = (function () {
   }
 
   function figGroups() {
-    const rows = [["lci", "LCI members"], ["enr", "ENR Top 400, not LCI"], ["fed", "Federal builders"]].map(([g, label]) => ({
-      label, n: gs[g].n, values: { any: gs[g].n ? gs[g].any_lean / gs[g].n : 0, method: gs[g].n ? gs[g].named_method / gs[g].n : 0 },
+    const SHORT = { lci: "Institute members", enr: "Ranked, not members", fed: "Other federal recipients" };
+    const rows = ["lci", "enr", "fed"].map((g) => ({
+      label: SHORT[g], n: gs[g].n, values: { any: gs[g].n ? gs[g].any_lean / gs[g].n : 0, method: gs[g].n ? gs[g].named_method / gs[g].n : 0 },
     }));
-    C.hbars($("fig-groups"), rows, [{ key: "any", name: "Lean language on the site", fill: "#ffe08a", dark: "#a07a00" }, { key: "method", name: "Names a lean routine", fill: "#f4a259", dark: "#a9491a" }], { rowH: 14, gap: 9, left: 118 });
+    C.hbars($("fig-groups"), rows, [{ key: "any", name: "Refers to lean practices on the site", fill: "#ffe08a", dark: "#a07a00" }, { key: "method", name: "Names a lean practice", fill: "#f4a259", dark: "#a9491a" }], { rowH: 14, gap: 9, left: 140 });
   }
   function figCommit() {
     const years = d3.range(2008, 2027);
@@ -161,7 +162,7 @@ window.Landscape = (function () {
     const el = $("fig-enr"); el.innerHTML = "";
     const a = document.createElement("div"), b = document.createElement("div");
     el.appendChild(a); el.appendChild(b);
-    const rowsM = enr.by_market.filter((r) => r.firms >= 10).map((r) => ({ label: r.dominant_market, n: r.firms, share: r.share_lci_ever, lo: r.lo_lci_ever, hi: r.hi_lci_ever, share2: r.share_lci_2026, lo2: r.lo_lci_2026, hi2: r.hi_lci_2026 }));
+    const rowsM = enr.by_market.filter((r) => r.firms >= 10).map((r) => ({ label: C.MARKET[r.dominant_market] || r.dominant_market, n: r.firms, share: r.share_lci_ever, lo: r.lo_lci_ever, hi: r.hi_lci_ever, share2: r.share_lci_2026, lo2: r.lo_lci_2026, hi2: r.hi_lci_2026 }));
     C.dotInterval(a, rowsM, { rowH: 26 });
     const rowsS = enr.by_size.map((r) => ({ label: "Revenue " + r.revenue_quintile.toLowerCase(), n: r.firms, share: r.share_lci_ever, lo: r.lo_lci_ever, hi: r.hi_lci_ever, share2: r.share_lci_2026, lo2: r.lo_lci_2026, hi2: r.hi_lci_2026 }));
     C.dotInterval(b, rowsS, { rowH: 26 });
@@ -169,8 +170,8 @@ window.Landscape = (function () {
   }
   function figLci() {
     const a = $("fig-lci-types"), b = $("fig-lci-growth");
-    const rows = lci.types.filter((t) => t.members >= 3).sort((x, y) => y.members - x.members).map((t) => ({ label: t.type_name, values: { m: t.members, c: t.lean_yes } }));
-    C.hbars(a, rows, [{ key: "m", name: "Members", fill: "#8fd3c3", dark: "#0f6b5b" }, { key: "c", name: "Whose directory entry claims lean practice", fill: "#ffe08a", dark: "#a07a00" }], { share: false, rowH: 13, gap: 8, left: 250, labelN: false });
+    const rows = lci.types.filter((t) => t.members >= 3).sort((x, y) => y.members - x.members).map((t) => ({ label: C.TYPE[t.type_name] || t.type_name, values: { m: t.members, c: t.lean_yes } }));
+    C.hbars(a, rows, [{ key: "m", name: "Members", fill: "#8fd3c3", dark: "#0f6b5b" }, { key: "c", name: "Whose directory entry describes lean practice", fill: "#ffe08a", dark: "#a07a00" }], { share: false, rowH: 13, gap: 8, left: 200, labelN: false });
     // cohort area: organizations listed each year by the year first listed
     const years = [...new Set(lci.cohorts.map((r) => r.year))].sort();
     const periods = [...new Set(lci.cohorts.map((r) => r.period))];

@@ -1,4 +1,6 @@
 """Export the companion web app's data (05_web_app/data/*.json) from the results files of 02_analysis, through core.out().
+Since 2026-11-08 (owner: the app renamed after the article, What Do Management Signals Reveal?, the Owners and Projects views
+dropped) federal.json, projects.json and contracts.json are no longer written; the v20 script is in _archive/2026-11-08_lean_atlas_v20/.
 Run from anywhere: python build_data.py. The app reads only these JSON files; nothing else is computed in the browser
 beyond counting and filtering what is here. Page texts stay out (third-party copyright): the app gets coded measures,
 method flags and the short verified quotes of the project records.
@@ -11,9 +13,6 @@ Outputs (data/)
   methods.json     lean methods named: firms per method, co-occurrence between methods, first year named (panel)
   lci.json         LCI directory: member types, owner sectors, cohorts by year, member map points
   enr.json         ENR Top 400: affiliation by dominant market and by revenue quintile, with Wilson intervals
-  federal.json     federal construction solicitations by fiscal year and term; the solicitations naming a lean method
-  projects.json    project records with a verbatim quote (voted by three local models; hand check pending)
-  contracts.json   usable federal awards of the panel firms by pricing type, competition and kind of work, by year
 """
 import sys as _sys; from pathlib import Path as _Path; _sys.path.insert(0, str(_Path(__file__).resolve().parents[1] / "02_analysis" / "_shared"))
 import json
@@ -394,12 +393,12 @@ def main():
     e = enr()
     dump("enr.json", e)
     fd = federal()
-    dump("federal.json", fd)
+    # dump("federal.json", fd)   # not written since 2026-11-08 (view dropped)
     pr = projects()
-    dump("projects.json", pr)
+    # dump("projects.json", pr)   # not written since 2026-11-08 (view dropped)
     lcs = pd.read_csv(core.out("lcs_firm_table.csv")).drop_duplicates("domain")
     _, allc = contracts_by_domain(dict(zip(lcs.firm, lcs.domain)))
-    dump("contracts.json", allc)
+    # dump("contracts.json", allc)   # not written since 2026-11-08 (view dropped)
     observed = [r for r in o if r.get("level") is not None]
     summary = {
         "built": date.today().isoformat(),

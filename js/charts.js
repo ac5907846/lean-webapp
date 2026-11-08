@@ -1,8 +1,16 @@
 // Small chart builders on D3: grouped and stacked bars, dot-and-interval, lines, a bubble matrix. Every function
 // renders into a container element, measures its width, and redraws on resize through C.onResize.
 window.C = (function () {
-  const GROUP = { lci: { name: "LCI members", fill: "#8fd3c3", dark: "#0f6b5b" }, enr: { name: "ENR Top 400, not LCI", fill: "#f6c89a", dark: "#a9491a" },
-                  fed: { name: "Federal builders", fill: "#c9c4e8", dark: "#4a3b8c" } };
+  const GROUP = { lci: { name: "Institute members", fill: "#8fd3c3", dark: "#0f6b5b" }, enr: { name: "Ranked firms, not members", fill: "#f6c89a", dark: "#a9491a" },
+                  fed: { name: "Other federal award recipients", fill: "#c9c4e8", dark: "#4a3b8c" } };
+  // labels shared by the views, in the words of the article (owner, 2026-11-08: no construction words beyond the defined names)
+  const TYPE = { "General contractors and construction managers": "Builders and project managers", "Specialty trade contractors": "Specialty trade firms",
+                 "Lean and management consultants": "Management consultants", "Architects and engineers": "Architects and engineers", "Owners": "Project owners",
+                 "Technology firms": "Technology firms", "Associations and others": "Associations and others", "Manufacturers and suppliers": "Manufacturers and suppliers",
+                 "Not classified": "Not classified" };
+  const LVL = ["read, no lean reference", "general lean reference", "names a lean practice", "three or more practices on one page"];
+  const MARKET = { "General building": "General building", "Industrial and petroleum": "Industrial and petroleum", "Hazardous waste": "Hazardous waste" };
+  const CODES = { u: "unknown (no coverage)", n: "observed, no lean reference", "1": "general lean reference", "2": "a named practice", "3": "three or more practices on one page" };
   const LEVEL = { 0: "#ffffff", 1: "#ffe08a", 2: "#f4a259", 3: "#c8553d" };
   const resizers = [];
   let rt = null;
@@ -171,7 +179,7 @@ window.C = (function () {
         const cellG = s.append("g").style("cursor", onClick && v ? "pointer" : null);
         cellG.append("rect").attr("x", left + j * cell).attr("y", left + i * cell).attr("width", cell).attr("height", cell).attr("fill", (i + j) % 2 ? "rgba(250,249,244,.6)" : "rgba(255,255,255,.4)").attr("stroke", "#eee");
         if (v) cellG.append("circle").attr("cx", cx).attr("cy", cy).attr("r", r(v)).attr("fill", i === j ? "#f4a259" : "#8fd3c3").attr("stroke", i === j ? "#a9491a" : "#0f6b5b")
-          .on("mousemove", (ev) => showTip(ev, (i === j ? `<b>${names[a]}</b>${v} organizations` : `<b>${names[a]} and ${names[b]}</b>${v} organizations name both`) + (onClick ? "<br><i>click to list them</i>" : ""))).on("mouseleave", hideTip);
+          .on("mousemove", (ev) => showTip(ev, (i === j ? `<b>${names[a]}</b>${v} firms` : `<b>${names[a]} and ${names[b]}</b>${v} firms name both`) + (onClick ? "<br><i>click to list them</i>" : ""))).on("mouseleave", hideTip);
         if (onClick && v) cellG.on("click", () => onClick(a, b));
       });
     });
@@ -197,7 +205,7 @@ window.C = (function () {
         const col = s.append("g");
         const hit = col.append("rect").attr("x", x(yr) - 1).attr("width", x.bandwidth() + 2).attr("y", 14).attr("height", h - 14 - 10).attr("fill", "transparent");
         col.append("rect").attr("x", x(yr)).attr("width", x.bandwidth()).attr("y", y(v)).attr("height", Math.max(v ? 2 : 1, y(0) - y(v))).attr("fill", v ? "#f4a259" : "#eee").attr("stroke", v ? "#a9491a" : "none").attr("pointer-events", "none");
-        hit.on("mousemove", (ev) => { hit.attr("fill", "rgba(0,0,0,.05)"); val.text(`${yr}: ${v}`); showTip(ev, `<b>${it.name}</b>${yr}: ${v} organization${v === 1 ? "" : "s"} first name it`); })
+        hit.on("mousemove", (ev) => { hit.attr("fill", "rgba(0,0,0,.05)"); val.text(`${yr}: ${v}`); showTip(ev, `<b>${it.name}</b>${yr}: ${v} firm${v === 1 ? "" : "s"} first name it`); })
            .on("mouseleave", () => { hit.attr("fill", "transparent"); val.text(""); hideTip(); });
       });
       s.append("line").attr("x1", 2).attr("x2", cw - 2).attr("y1", y(0) + .5).attr("y2", y(0) + .5).attr("stroke", "#d9d6cc");
@@ -227,5 +235,5 @@ window.C = (function () {
     return [(c - s) / d, (c + s) / d];
   }
 
-  return { GROUP, LEVEL, hbars, stackedYears, dotInterval, lines, bubbleMatrix, smallMultiples, heatTable, wilson, legend, showTip, moveTip, hideTip, onResize, pct, fmt };
+  return { GROUP, LEVEL, TYPE, LVL, MARKET, CODES, hbars, stackedYears, dotInterval, lines, bubbleMatrix, smallMultiples, heatTable, wilson, legend, showTip, moveTip, hideTip, onResize, pct, fmt };
 })();

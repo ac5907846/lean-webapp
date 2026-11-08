@@ -1,66 +1,53 @@
-# 05_web_app: Lean construction landscape (lean.praiser.us)
+# 05_web_app: What Do Management Signals Reveal? (mgmt-signal.praiser.us)
 
-Static companion site: `index.html`, `css/app.css`, `js/*.js`, `data/*.json`. No framework, no build step, no server;
-D3 7 and topojson-client from cdnjs. The app reads only the JSON that `build_data.py` exports from the results files
-of `02_analysis` (through `core.out()`); nothing else is computed in the browser beyond counting and filtering.
+Companion site of the article "What Do Management Signals Reveal? Organizational Positioning and Outcomes in Project-Based
+Markets" (12_manuscript_JMS). Static: `index.html`, `css/app.css`, `js/*.js`, `data/*.json`; no framework, no build step, no
+server; D3 7 and topojson-client from cdnjs. The app reads only the JSON that `build_data.py` exports from the results files of
+`02_analysis` (through `core.out()`); nothing else is computed in the browser beyond counting and filtering.
+
+Renamed and reworded on 2026-11-08 (owner: the app carries the manuscript's title, its language, and no construction words beyond
+the defined names LCI and CMAR; the map and the firm search stay, the Owners and Projects views go). The previous app, the Lean
+Project Delivery Atlas (v20, lean.praiser.us), is archived whole in `_archive/2026-11-08_lean_atlas_v20/`; the journal app of
+2026-10-26 (v19) and the conference app (v18) are the two older archive folders.
 
 Tabs (hash router, `#landscape` ... `#data`):
-- Landscape: the hero map of every organization in the frame (1,076: ENR Top 400, LCI corporate members, federal
-  builders of the panel) with a tour (frame, websites read, lean language, named methods, first commitments by year)
-  that loops until its Pause button is pressed (owner request 2026-10-07), a legend of the dots under the map, and a
-  readout of counts; lean language by group; first commitments by year; LCI affiliation in the ENR Top 400;
-  LCI member types and growth.
-- Organizations: filtered list (click a column header to sort, again to flip) and a detail panel (profile, LCI years,
-  year-by-year coverage strip, methods named, archived pages with lean language linked to the Wayback Machine and to
-  the live page, contract types, source links).
-  `#organizations/<id>` opens one organization (the map dots link here).
-- Methods: organizations per method and the pairs named together, counted from the organizations of the chosen
-  groups (chips); a click on a method or a pair lists the organizations with links; first year each method is named
-  (panel).
-- Owners (rewritten 2026-10-08 after the owner found it hard to read): a question (do owners ask for lean?), headline
-  counts, the solicitation terms by fiscal year with term chips and share or count, the same terms by department, the
-  two lean notices, the contract types of the panel awards (one dimension at a time with its share by year), and the
-  LCI owner members by sector (click a sector to list them).
-  Links: an organization with a UEI links to its USAspending recipient profile (00_code/x16 resolves the UEI; SAM.gov
-  entity pages have no stable public address, their routes return 404 outside a session).
-  Scripts are kept ASCII (non-ASCII characters as \u escapes) so a server without a charset header cannot garble them.
-- Projects: project records on a map and as cards with the verified quote.
-- Data: sources, definitions, status and limits.
+- Map: every firm of the frame at its headquarters (ENR Top 400, LCI corporate members, other recipients of federal project
+  awards) with a tour that loops until its Pause button is pressed (the firms; websites read; website references to lean
+  practices; named practices; first observed commitment by year), a legend under the map and a readout of counts; references by
+  group; first observed commitments by year; institute membership among the ranked firms; the institute directory by member type
+  and by cohort.
+- Firms: filtered list (click a column header to sort, again to flip) and a detail panel (profile, membership years,
+  year-by-year coverage strip, practices named, archived pages with lean references linked to the Internet Archive and to the
+  live page, contract characteristics, source links). `#organizations/<id>` opens one firm (the map dots link here).
+- Practices: firms per named practice and the pairs named together, counted from the firms of the chosen groups (chips); a
+  click on a practice or a pair lists the firms with links; the first year each practice is named (panel).
+- Data: the study in brief and the Zenodo record, sources, definitions (frame, groups, levels, named practices, first observed
+  commitment, federal awards), limits.
+
+Language (owner, 2026-11-08): firm, never contractor; institute members, ranked firms, federal award recipients for the three
+frame groups; website references to lean practices and named practices, never lean language or routines; construction only in
+the defined names (Lean Construction Institute, construction management at risk). The three frame groups are the frame the
+article's four credential groups were read from; the article's estimates stay in the article.
 
 Rebuild and release:
-1. `python build_data.py` (after the analyses it reads: 05 a2 and a5, 06, 07, 08, 09, 10, 11 s1, 12 l1 and l2).
-2. Test locally with a threaded server (single-threaded `http.server` refuses parallel fetches), in Chrome.
+1. `python build_data.py` (after the analyses it reads: 05 a2 and a5, 06, 07, 09, 11 s1, 12 l1 and l2; federal.json,
+   projects.json and contracts.json are no longer written).
+2. Test locally with a threaded server (`python -m http.server` is threaded since Python 3.7), in Chrome or Playwright.
 3. Bump `?v=N` on every asset in `index.html` and `V` in `js/app.js` (GitHub Pages caches hard).
-4. Copy to the public repository `ac5907846/lean-webapp` (root = this folder only; `CNAME` = lean.praiser.us,
-   `.nojekyll`), commit, push. Cloudflare DNS: `CNAME lean -> ac5907846.github.io`, DNS only.
+4. Copy to the public repository `ac5907846/lean-webapp` (root = this folder only; `CNAME` = mgmt-signal.praiser.us,
+   `.nojekyll`), commit, push. Cloudflare DNS: `CNAME mgmt-signal -> ac5907846.github.io`, DNS only; `lean` kept as a proxied
+   record with a redirect rule to the new address so earlier links keep working.
 
-Data files (data/): `summary.json` (counts, build date), `orgs.json` (one row per organization; keys with null or
-false are dropped), `years.json` (panel domains by year, one character per year), `methods.json`, `lci.json`,
-`enr.json`, `federal.json`, `projects.json`, `us-states.json` (us-atlas states-10m TopoJSON).
+Data files (data/): `summary.json` (counts, build date), `orgs.json` (one row per firm; keys with null or false are dropped),
+`years.json` (panel domains by year, one character per year), `methods.json`, `lci.json`, `enr.json`, `us-states.json` (us-atlas
+states-10m TopoJSON). Type and level labels are rewritten in the browser (charts.js TYPE, LVL, CODES), so the exported data are
+unchanged from v20 (built 2026-10-09).
 
-Rules kept: page texts are never exported (coded measures and the short verified project quotes only); every website
-measure is labeled provisional until the dictionary is validated; no e-mail address or key in the files.
+Rules kept: page texts are never exported (coded measures only); every website measure is provisional until the dictionary is
+validated; no e-mail address or key in the files; scripts are kept ASCII (non-ASCII characters as \u escapes).
 
 Changes:
 - 2026-10-06: created (owner request: descriptive statistics first, maps of the organizations, the overall picture).
-
-Layout pass (owner 2026-10-08, "too many empty boxes"; three checks per view at 1568 px): landing view = map with a side
-column (readout with the step list and Pause, then the lean-by-group card; the map fills the card height), then four
-figures in a two-column masonry (`columns: 2`, cards hug their content); Organizations preselects the first row so the
-detail panel is never empty; Methods = left column (bars, then the organization list, scrolling past 520 px) and the
-matrix on the right, starting on the most named method; Owners = the departments as a heat table (same height as the
-lean notices), the contract types with their year lines side by side, the LCI owners as bars plus a small map beside
-the member list; Projects = map 1.3 : 1 bars with integer ticks. Motion sped up the same day (tour steps 2.6 to 3 s,
-year step 280 ms, count-ups 450 ms, bar transitions 350 ms).
-
-2026-10-08, later: the tooltip element lives in the body (it sat inside the landing section, so no other view had
-hover); the Data view opens with a pipeline figure (six stages left to right, one pastel plate per artifact with its
-count or size, hover for the meaning, click for the explanation; drawn from summary.json, which build_data.py now
-fills with the size of every raw source folder and of the exported JSON), the sources table carries a size column,
-definitions and limits are folded, and the files table is gone. Second address: https://lean.sexsi.us redirects
-(301, path kept) to lean.praiser.us through a proxied placeholder record (A 192.0.2.1) and a Redirect Rule in the
-sexsi.us zone; lean.praiser.us is the canonical site.
-
-2026-10-08: the site is named Lean Construction Atlas (owner); subtitle "current status and a research agenda"; the paper cites it by that name.
-- 2026-10-26: a study-aligned rebuild (v19: rank wall, contractors, markets, outcomes, data) was deployed for an hour and withdrawn at the owner's request (“trả lại web app cũ nhìn đẹp hơn”); it is kept in `_archive/2026-10-26_journal_app_v19/`. The v18 push had dropped the custom domain (no CNAME file in the repository); CNAME and .nojekyll restored the same day.
-2026-10-29 (owner): renamed Lean Project Delivery Atlas; subtitle “Documented lean practices in the United States, 2008 to 2026: current status and a research agenda”; v20.
+- 2026-10-08: layout pass, motion, zoom buttons, Data view pipeline figure (see the archived README of v20 for the details).
+- 2026-10-26: journal app v19 built and then set aside; the atlas restored (v18) and renamed Lean Project Delivery Atlas (v20, 2026-10-29).
+- 2026-11-08: v21, this version.
