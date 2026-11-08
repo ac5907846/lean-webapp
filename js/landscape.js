@@ -1,6 +1,6 @@
 // Landing view: the hero map with its tour and readout, then four descriptive figures.
 window.Landscape = (function () {
-  let map, orgs, S, lci, enr, tour;
+  let map, orgs, S, tour;
   const groupsOn = new Set(["lci", "enr", "fed"]);
   let mode = "all", year = 2026;
   const $ = (id) => document.getElementById(id);
@@ -146,7 +146,7 @@ window.Landscape = (function () {
   }
 
   async function init(data) {
-    ({ orgs, S, lci, enr } = data);
+    ({ orgs, S } = data);
     gs = S.group_stats;
     M_NAMES = data.methods.names;
     initHero(data.topo);
