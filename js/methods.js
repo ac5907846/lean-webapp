@@ -36,12 +36,6 @@ window.Methods = (function () {
       rows.map((d) => `<tr><td><a href="#organizations/${encodeURIComponent(d.id)}">${d.name}</a></td><td><span class="dot ${d.group}"></span>${SHORTG[d.group]}</td><td>${d.state || ""}</td><td class="num">${d.methods.length}</td></tr>`).join("") + `</table>`;
     $("meth-clear").addEventListener("click", (ev) => { ev.preventDefault(); pick = null; redraw(); });
   }
-  function figFirst() {
-    const years = d3.range(2008, 2027);
-    const items = m.routines.map((k) => ({ name: m.names[k], values: m.first_year[k] || {}, total: d3.sum(Object.values(m.first_year[k] || {})) })).filter((it) => it.total >= 3).sort((a, b) => b.total - a.total);
-    const cols = window.innerWidth < 700 ? 2 : 4;
-    C.smallMultiples($("fig-firstyear"), items, years, { cols, h: 100 });
-  }
   function redraw() { figMethods(); figCooc(); list(); }
   function init(data) {
     m = data.methods; orgs = data.orgs; G = C.GROUP;
@@ -50,8 +44,8 @@ window.Methods = (function () {
     }));
     const c0 = count(pool());
     pick = { a: m.routines.slice().sort((x, y) => (c0[y] || 0) - (c0[x] || 0))[0] };   // start on the most named practice
-    redraw(); figFirst();
-    C.onResize(() => { figMethods(); figCooc(); figFirst(); });
+    redraw();
+    C.onResize(() => { figMethods(); figCooc(); });
   }
   return { init, show() {}, hide() {} };
 })();

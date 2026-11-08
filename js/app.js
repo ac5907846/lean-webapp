@@ -1,6 +1,6 @@
 // Boot: load the data, build each view once, route by hash.
 (async function () {
-  const V = "21";
+  const V = "22";
   const get = (f) => fetch(`data/${f}?v=${V}`).then((r) => r.json());
   const [S, orgs, topo] = await Promise.all([get("summary.json"), get("orgs.json"), get("us-states.json")]);
   const [years, methods, lci, enr] = await Promise.all([get("years.json"), get("methods.json"), get("lci.json"), get("enr.json")]);

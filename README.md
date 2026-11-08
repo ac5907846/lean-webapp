@@ -50,4 +50,8 @@ Changes:
 - 2026-10-06: created (owner request: descriptive statistics first, maps of the organizations, the overall picture).
 - 2026-10-08: layout pass, motion, zoom buttons, Data view pipeline figure (see the archived README of v20 for the details).
 - 2026-10-26: journal app v19 built and then set aside; the atlas restored (v18) and renamed Lean Project Delivery Atlas (v20, 2026-10-29).
-- 2026-11-08: v21, this version.
+- 2026-11-08: v21.
+
+Live since 2026-11-08 at https://mgmt-signal.praiser.us (v21 pushed; Cloudflare record `CNAME mgmt-signal -> ac5907846.github.io`, DNS only, added in the praiser.us zone, which sits in the shared Drlongw account; GitHub Pages custom domain from the CNAME file, certificate issued, Enforce HTTPS on). The old address lean.praiser.us now returns GitHub’s 404 (its DNS record is still there; remove it or redirect it on the owner’s word). Pushing: the GitHub CLI on this machine is signed in as anonymous-temporary (GITHUB_TOKEN), which cannot write here; push with the stored ac5907846 account for one command: `env -u GITHUB_TOKEN git -c "credential.https://github.com.helper=" -c "credential.https://github.com.helper=manager" push https://ac5907846@github.com/ac5907846/lean-webapp.git main`.
+
+- 2026-11-08, v22 (owner: keep the tabs uncluttered): the Map tab keeps only the map, its tour and the readout; the Practices tab keeps the practices per firm, the firm list and the pairs matrix. The six other figures (website references by group, first observed commitments by year, institute membership among the ranked firms, the directory by member type and by cohort, the year a practice is first named) moved into a closed “More figures” section at the end of the Data tab, drawn when it is opened (datatab.js). v21 archived in `_archive/2026-11-08_v21_before_declutter/`.

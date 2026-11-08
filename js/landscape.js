@@ -145,49 +145,11 @@ window.Landscape = (function () {
     });
   }
 
-  function figGroups() {
-    const SHORT = { lci: "Institute members", enr: "Ranked, not members", fed: "Other federal recipients" };
-    const rows = ["lci", "enr", "fed"].map((g) => ({
-      label: SHORT[g], n: gs[g].n, values: { any: gs[g].n ? gs[g].any_lean / gs[g].n : 0, method: gs[g].n ? gs[g].named_method / gs[g].n : 0 },
-    }));
-    C.hbars($("fig-groups"), rows, [{ key: "any", name: "Refers to lean practices on the site", fill: "#ffe08a", dark: "#a07a00" }, { key: "method", name: "Names a lean practice", fill: "#f4a259", dark: "#a9491a" }], { rowH: 14, gap: 9, left: 140 });
-  }
-  function figCommit() {
-    const years = d3.range(2008, 2027);
-    const data = {};
-    years.forEach((y) => { data[y] = {}; ["lci", "enr", "fed"].forEach((g) => { data[y][g] = (S.commit_years[g] || {})[y] || 0; }); });
-    C.stackedYears($("fig-commit"), data, ["lci", "enr", "fed"].map((g) => ({ key: g, ...G[g] })), { years, h: 240 });
-  }
-  function figEnr() {
-    const el = $("fig-enr"); el.innerHTML = "";
-    const a = document.createElement("div"), b = document.createElement("div");
-    el.appendChild(a); el.appendChild(b);
-    const rowsM = enr.by_market.filter((r) => r.firms >= 10).map((r) => ({ label: C.MARKET[r.dominant_market] || r.dominant_market, n: r.firms, share: r.share_lci_ever, lo: r.lo_lci_ever, hi: r.hi_lci_ever, share2: r.share_lci_2026, lo2: r.lo_lci_2026, hi2: r.hi_lci_2026 }));
-    C.dotInterval(a, rowsM, { rowH: 26 });
-    const rowsS = enr.by_size.map((r) => ({ label: "Revenue " + r.revenue_quintile.toLowerCase(), n: r.firms, share: r.share_lci_ever, lo: r.lo_lci_ever, hi: r.hi_lci_ever, share2: r.share_lci_2026, lo2: r.lo_lci_2026, hi2: r.hi_lci_2026 }));
-    C.dotInterval(b, rowsS, { rowH: 26 });
-    b.querySelector(".legend").remove();
-  }
-  function figLci() {
-    const a = $("fig-lci-types"), b = $("fig-lci-growth");
-    const rows = lci.types.filter((t) => t.members >= 3).sort((x, y) => y.members - x.members).map((t) => ({ label: C.TYPE[t.type_name] || t.type_name, values: { m: t.members, c: t.lean_yes } }));
-    C.hbars(a, rows, [{ key: "m", name: "Members", fill: "#8fd3c3", dark: "#0f6b5b" }, { key: "c", name: "Whose directory entry describes lean practice", fill: "#ffe08a", dark: "#a07a00" }], { share: false, rowH: 13, gap: 8, left: 200, labelN: false });
-    // cohort area: organizations listed each year by the year first listed
-    const years = [...new Set(lci.cohorts.map((r) => r.year))].sort();
-    const periods = [...new Set(lci.cohorts.map((r) => r.period))];
-    const pal = ["#0f6b5b", "#4fa892", "#8fd3c3", "#c6ebe1", "#ffe08a"];
-    const data = {}; years.forEach((y) => { data[y] = {}; });
-    lci.cohorts.forEach((r) => { data[r.year][r.period] = r.organizations; });
-    C.stackedYears(b, data, periods.map((p, i) => ({ key: p, name: "first listed " + p, fill: pal[i], dark: "#0f6b5b" })), { years, h: 220, cumulative: false });
-  }
-
   async function init(data) {
     ({ orgs, S, lci, enr } = data);
     gs = S.group_stats;
     M_NAMES = data.methods.names;
     initHero(data.topo);
-    figGroups(); figCommit(); figEnr(); figLci();
-    C.onResize(() => { figGroups(); figCommit(); figEnr(); figLci(); });
   }
   // The tour runs until its Pause button is pressed; leaving the tab only suspends it and coming back resumes it.
   let resumeOnShow = true;

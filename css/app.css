@@ -211,3 +211,11 @@ th.sortable .arr { font-size: 9px; margin-left: 2px; }
 .zoombtns button { width: 28px; height: 28px; font: inherit; font-size: 16px; line-height: 1; border: 1px solid var(--line); border-radius: 6px; background: #fff; cursor: pointer; box-shadow: 0 1px 3px rgba(0,0,0,.08); }
 .zoombtns button:hover { background: #f1efe8; }
 .map-wrap.small { position: relative; }
+
+/* the closed section of background figures on the Data tab (2026-11-08) */
+details.more { margin-top: 16px; }
+details.more > summary { cursor: pointer; font-weight: 600; padding: 2px 0; }
+details.more[open] > summary { margin-bottom: 4px; }
+details.more .masonry { margin-top: 8px; }
+details.more .masonry .card { box-shadow: none; }
+details.more .card.wide { margin-top: 0; }
