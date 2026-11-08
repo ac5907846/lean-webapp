@@ -5,10 +5,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>What Do Management Signals Reveal?</title>
 <meta name="description" content="What Do Management Signals Reveal? Organizational Positioning and Outcomes in Project-Based Markets. The firms behind the study: which U.S. project-based firms display two management credentials, professional institute membership and website references to lean project delivery, where they are, which practices they name, and since when. Every firm links to its sources.">
-<link rel="preload" href="data/summary.json?v=25" as="fetch" crossorigin>
-<link rel="preload" href="data/orgs.json?v=25" as="fetch" crossorigin>
-<link rel="preload" href="data/us-states.json?v=25" as="fetch" crossorigin>
-<link rel="stylesheet" href="css/app.css?v=25">
+<link rel="preload" href="data/summary.json?v=26" as="fetch" crossorigin>
+<link rel="preload" href="data/orgs.json?v=26" as="fetch" crossorigin>
+<link rel="preload" href="data/us-states.json?v=26" as="fetch" crossorigin>
+<link rel="stylesheet" href="css/app.css?v=26">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/topojson/3.0.2/topojson.min.js"></script>
 </head>
@@ -34,9 +34,11 @@
         <div class="map-controls">
           <div class="maplegend" id="hero-legend"></div>
           <div class="chips" id="hero-groups">
-            <button class="chip on" data-g="lci">Institute members</button>
-            <button class="chip on" data-g="enr">Ranked firms, not members</button>
-            <button class="chip on" data-g="fed">Other federal award recipients</button>
+            <button class="chip on" data-g="MM">Member-mentioned</button>
+            <button class="chip on" data-g="MS">Member-silent</button>
+            <button class="chip on" data-g="NM">Non-member-mentioned</button>
+            <button class="chip on" data-g="NS">Non-member-silent</button>
+            <button class="chip on" data-g="U">Unclassified</button>
           </div>
           <div class="yearbar" id="hero-yearbar" hidden>
             <span class="ylab">2008</span><input type="range" id="hero-year" min="2008" max="2026" value="2026"><span class="ylab">2026</span>
@@ -49,7 +51,7 @@
           <div class="step" id="hero-step">The firms</div>
           <div class="bignums" id="hero-nums"></div>
           <div class="steps" id="hero-mode">
-            <button class="chip on" data-m="all">All firms</button>
+            <button class="chip on" data-m="all">Four groups</button>
             <button class="chip" data-m="observed">Website read</button>
             <button class="chip" data-m="lean">Website references to lean practices</button>
             <button class="chip" data-m="method">Named practices</button>
@@ -65,9 +67,11 @@
     <div class="toolbar">
       <input type="search" id="org-search" placeholder="Name, domain, city or state">
       <div class="chips" id="org-groups">
-        <button class="chip on" data-g="lci">Institute members</button>
-        <button class="chip on" data-g="enr">Ranked firms, not members</button>
-        <button class="chip on" data-g="fed">Other federal award recipients</button>
+        <button class="chip on" data-g="MM">Member-mentioned</button>
+        <button class="chip on" data-g="MS">Member-silent</button>
+        <button class="chip on" data-g="NM">Non-member-mentioned</button>
+        <button class="chip on" data-g="NS">Non-member-silent</button>
+        <button class="chip on" data-g="U">Unclassified</button>
       </div>
       <select id="org-level">
         <option value="any">Any website status</option>
@@ -90,9 +94,8 @@
 
   <section id="p-methods" class="view" hidden>
     <div class="chips" id="meth-groups">
-      <button class="chip on lci" data-g="lci">Institute members</button>
-      <button class="chip on enr" data-g="enr">Ranked firms, not members</button>
-      <button class="chip on fed" data-g="fed">Other federal award recipients</button>
+      <button class="chip on" data-g="MM">Member-mentioned</button>
+      <button class="chip on" data-g="NM">Non-member-mentioned</button>
     </div>
     <div class="grid2 cols">
       <figure class="card">
@@ -110,13 +113,13 @@
 </main>
 <div class="tip" id="tip" hidden></div>
 
-<script src="js/motion.js?v=25"></script>
-<script src="js/charts.js?v=25"></script>
-<script src="js/usmap.js?v=25"></script>
-<script src="js/landscape.js?v=25"></script>
-<script src="js/organizations.js?v=25"></script>
-<script src="js/methods.js?v=25"></script>
-<script src="js/datatab.js?v=25"></script>
-<script src="js/app.js?v=25"></script>
+<script src="js/motion.js?v=26"></script>
+<script src="js/charts.js?v=26"></script>
+<script src="js/usmap.js?v=26"></script>
+<script src="js/landscape.js?v=26"></script>
+<script src="js/organizations.js?v=26"></script>
+<script src="js/methods.js?v=26"></script>
+<script src="js/datatab.js?v=26"></script>
+<script src="js/app.js?v=26"></script>
 </body>
 </html>

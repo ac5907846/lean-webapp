@@ -3,9 +3,9 @@
 window.Methods = (function () {
   let m, orgs, G;
   const $ = (id) => document.getElementById(id);
-  const groupsOn = new Set(["lci", "enr", "fed"]);
+  const groupsOn = new Set(["MM", "NM"]);   // only the two mentioned groups name practices
   let pick = null;   // {a, b}: a practice, or a pair of practices, whose firms are listed
-  const SHORTG = { lci: "Member", enr: "Ranked, not member", fed: "Federal" };
+  const SHORTG = { MM: "Member-mentioned", MS: "Member-silent", NM: "Non-member-mentioned", NS: "Non-member-silent", U: "Unclassified" };
 
   const pool = () => orgs.filter((d) => groupsOn.has(d.group) && d.methods && d.methods.length);
   const count = (rows) => { const c = {}; rows.forEach((d) => d.methods.forEach((k) => { c[k] = (c[k] || 0) + 1; })); return c; };

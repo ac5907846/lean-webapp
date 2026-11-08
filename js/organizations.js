@@ -4,7 +4,7 @@ window.Organizations = (function () {
   let orgs, years, names, selected = null, shown = 150;
   const $ = (id) => document.getElementById(id);
   const G = C.GROUP;
-  const groupsOn = new Set(["lci", "enr", "fed"]);
+  const groupsOn = new Set(C.GROUPS);
   const LVL = C.LVL;
   const TYPE = C.TYPE;
   const SHORT = { "General contractors and construction managers": "Builder / PM", "Specialty trade contractors": "Trade", "Lean and management consultants": "Consultant",
@@ -13,9 +13,9 @@ window.Organizations = (function () {
   const WORK = { "New construction": "New facilities", "Maintenance, repair, alteration": "Maintenance, repair, alteration" };
 
   function csv(rows) {
-    const cols = ["name", "domain", "type", "group", "city", "state", "enr_rank", "revenue_musd", "market", "lci_first_year", "fed_awards", "fed_value_musd", "pages", "recent_pages", "level", "commit_year", "routine_year", "methods"];
+    const cols = ["name", "domain", "type", "group", "listed_in", "city", "state", "enr_rank", "revenue_musd", "market", "lci_first_year", "fed_awards", "fed_value_musd", "pages", "recent_pages", "level", "commit_year", "routine_year", "methods"];
     const esc = (v) => (v == null ? "" : `"${String(Array.isArray(v) ? v.join(";") : v).replace(/"/g, '""')}"`);
-    const val = (d, c) => (c === "group" ? G[d.group].name : c === "type" ? TYPE[d.type] || d.type : c === "methods" && d.methods ? d.methods.map((m) => names[m] || m) : d[c]);
+    const val = (d, c) => (c === "group" ? G[d.group].name : c === "listed_in" ? C.SRC[d.src] : c === "type" ? TYPE[d.type] || d.type : c === "methods" && d.methods ? d.methods.map((m) => names[m] || m) : d[c]);
     const lines = [cols.join(",")].concat(rows.map((d) => cols.map((c) => esc(val(d, c))).join(",")));
     const blob = new Blob([lines.join("\n")], { type: "text/csv" });
     const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "management_signals_firms.csv"; a.click();
@@ -88,8 +88,8 @@ window.Organizations = (function () {
     if (!d) { el.innerHTML = '<p class="muted">Select a firm.</p>'; return; }
     const row = (k, v) => (v == null || v === "" ? "" : `<dt>${k}</dt><dd>${v}</dd>`);
     const pct = (v) => (v == null ? null : Math.round(100 * v) + "%");
-    let h = `<h2>${d.name}</h2><div class="dom">${d.domain || ""}${d.domain ? " · " : ""}<span class="dot ${d.group}"></span>${G[d.group].name}${d.lci_type ? " · " + (TYPE[d.lci_type] || d.lci_type).toLowerCase() : ""}</div>`;
-    h += `<dl>${row("Headquarters", [d.city, d.state, d.country !== "US" ? d.country : null].filter(Boolean).join(", "))}${row("Organization type", TYPE[d.type] || d.type)}`;
+    let h = `<h2>${d.name}</h2><div class="dom">${d.domain || ""}${d.domain ? " · " : ""}<span class="dot ${d.group}"></span>${G[d.group].name}</div>`;
+    h += `<dl>${row("Listed in", C.SRC[d.src])}${row("Headquarters", [d.city, d.state, d.country !== "US" ? d.country : null].filter(Boolean).join(", "))}${row("Organization type", TYPE[d.type] || d.type)}`;
     h += `${row("Industry ranking (ENR Top 400)", d.enr_rank ? `rank ${d.enr_rank}, revenue $${C.fmt(Math.round(d.revenue_musd))} million` : null)}${row("Dominant market", C.MARKET[d.market] || d.market)}`;
     h += `${row("General building share", pct(d.pct_general_building != null ? d.pct_general_building / 100 : null))}${row("CMAR share of revenue", pct(d.pct_cm_at_risk != null ? d.pct_cm_at_risk / 100 : null))}`;
     h += `${row("Institute membership (LCI)", d.lci_first_year ? `listed since ${d.lci_first_year}${d.in_lci ? ", listed in 2026" : ", not listed in 2026"}` : d.in_lci ? "listed in 2026" : null)}`;

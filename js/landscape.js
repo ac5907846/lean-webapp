@@ -1,7 +1,7 @@
 // Landing view: the hero map with its tour and readout, then four descriptive figures.
 window.Landscape = (function () {
   let map, orgs, S, tour;
-  const groupsOn = new Set(["lci", "enr", "fed"]);
+  const groupsOn = new Set(C.GROUPS);
   let mode = "all", year = 2026;
   const $ = (id) => document.getElementById(id);
   const G = C.GROUP;
@@ -56,11 +56,11 @@ window.Landscape = (function () {
 
   // Legend of the dots, one per mode; the symbols repeat the styles of style() above.
   const dot = (fill, stroke, r) => `<svg viewBox="0 0 20 20"><circle cx="10" cy="10" r="${r}" fill="${fill}" stroke="${stroke}" stroke-width="1"/></svg>`;
-  const groupDots = () => ["lci", "enr", "fed"].map((g) => `<div>${dot(G[g].fill, G[g].dark, 3.5)}${G[g].name}</div>`).join("");
+  const groupDots = (gs = C.GROUPS) => gs.map((g) => `<div>${dot(G[g].fill, G[g].dark, 3.5)}${G[g].name}</div>`).join("");
   const notRead = `<div>${dot("#fff", "#ccc", 2)}website not read</div>`;
   const LEGEND = {
     all: () => `<div class="t">One dot per firm, at its headquarters</div>${groupDots()}`,
-    observed: () => `<div class="t">Archived website read</div>${groupDots()}${notRead}`,
+    observed: () => `<div class="t">Archived website read</div>${groupDots(["MM", "MS", "NM", "NS"])}${notRead}`,
     lean: () => `<div class="t">Highest level of lean reference found</div><div>${dot(C.LEVEL[1], "#7a3b12", 5)}general lean reference</div><div>${dot(C.LEVEL[2], "#7a3b12", 6)}names a lean practice</div><div>${dot(C.LEVEL[3], "#7a3b12", 7)}three or more practices on one page</div><div>${dot("#fff", "#888", 2.5)}read, no lean reference (color of the group)</div>${notRead}`,
     method: () => `<div class="t">Named lean practices</div><div>${dot(C.LEVEL[2], "#7a3b12", 6.5)}names a lean practice</div><div>${dot(C.LEVEL[3], "#7a3b12", 7.5)}three or more practices on one page</div><div>${dot("#fff", "#888", 2.5)}read, no practice named</div>${notRead}`,
     year: () => `<div class="t">Federal award recipients in the panel, by year</div><div>${dot("#c8553d", "#7a1f10", 8)}first observed commitment this year</div><div>${dot("#c8553d", "#7a1f10", 5)}committed in an earlier year</div><div>${dot("#fff", "#888", 2.5)}observed, no lean reference yet</div><div>${dot("#fff", "#ddd", 1.6)}not observed yet, or not in the panel</div>`,
@@ -72,40 +72,44 @@ window.Landscape = (function () {
     $("hero-legend").innerHTML = LEGEND[m]();
   }
 
-  let gs;
+  const count = (f) => orgs.filter(f).length;
+  const nG = (g) => count((d) => d.group === g);
 
   function stepAll() {
     setMode("all"); draw();
-    readout("The firms", [
-      { v: S.organizations, l: "U.S. project-based firms: the ENR Top 400 rankings, the LCI corporate directory, and other recipients of federal project awards" },
-      { v: S.by_group.lci, l: "institute members", cls: "lci" }, { v: S.by_group.enr, l: "ranked firms, not members", cls: "enr" }, { v: S.by_group.fed, l: "other federal award recipients", cls: "fed" },
-    ], `${C.fmt(S.with_place)} placed by headquarters; ${S.states} states. Two publicly observable credentials: professional institute membership and the firm’s own website references to lean project delivery.`);
+    readout("Four groups, as in the article", [
+      { v: nG("MM"), l: "Member-mentioned: institute members whose website refers to lean practices", cls: "MM" },
+      { v: nG("MS"), l: "Member-silent: members without such references", cls: "MS" },
+      { v: nG("NM"), l: "Non-member-mentioned: non-members whose website refers to lean practices", cls: "NM" },
+      { v: nG("NS"), l: "Non-member-silent: neither credential", cls: "NS" },
+    ], `${C.fmt(orgs.length)} U.S. project-based firms (the ENR Top 400, the LCI corporate directory, and other recipients of federal project awards); ${C.fmt(nG("U"))} are unclassified because no archived website could be read. The two credentials: membership in the Lean Construction Institute (LCI) and the firm’s own website references to lean project delivery.`);
   }
   function stepObserved() {
     setMode("observed"); draw();
     readout("Websites read", [
-      { v: S.observed, l: "firms whose archived corporate website was read" },
+      { v: S.observed, l: "firms whose archived corporate website was read, and so could be classified" },
       { v: S.panel_pages, l: "archived pages, 2008 to 2026, federal award recipients of the panel (Internet Archive and Common Crawl)" },
       { v: S.recent_pages, l: "recent pages, 2024 to 2026, the rest of the frame (Common Crawl)" },
     ], "Pages are read with a dictionary of lean project delivery terms; the texts themselves are not published.");
   }
   function stepLean() {
     setMode("lean"); draw();
+    const mem = nG("MM") + nG("MS"), non = nG("NM") + nG("NS");
     readout("Website references", [
-      { v: S.any_lean, l: `of ${S.observed} firms read refer to lean practices on their site` },
-      { v: gs.lci.n ? 100 * gs.lci.any_lean / gs.lci.n : 0, suffix: "%", l: `of institute members read (${gs.lci.any_lean} of ${gs.lci.n})`, cls: "lci" },
-      { v: gs.enr.n ? 100 * gs.enr.any_lean / gs.enr.n : 0, suffix: "%", l: `of ranked firms read, not members (${gs.enr.any_lean} of ${gs.enr.n})`, cls: "enr" },
-      { v: gs.fed.n ? 100 * gs.fed.any_lean / gs.fed.n : 0, suffix: "%", l: `of other federal award recipients read (${gs.fed.any_lean} of ${gs.fed.n})`, cls: "fed" },
+      { v: nG("MM") + nG("NM"), l: `of ${C.fmt(mem + non)} classified firms refer to lean practices on their site` },
+      { v: mem ? 100 * nG("MM") / mem : 0, suffix: "%", l: `of institute members are Member-mentioned (${nG("MM")} of ${mem})`, cls: "MM" },
+      { v: non ? 100 * nG("NM") / non : 0, suffix: "%", l: `of non-members are Non-member-mentioned (${nG("NM")} of ${non})`, cls: "NM" },
     ], "Yellow: a general lean reference; orange: a named practice; red: three or more practices on one page.");
   }
   function stepMethod() {
     setMode("method"); draw();
+    const named = (g) => count((d) => d.group === g && d.level >= 2);
     readout("Named practices", [
       { v: S.named_method, l: "firms name a lean practice (Last Planner System, pull planning, target value design, takt ...)" },
       { v: S.system_level, l: "name three or more practices on one page" },
-      { v: gs.lci.n ? 100 * gs.lci.named_method / gs.lci.n : 0, suffix: "%", l: "of institute members read", cls: "lci" },
-      { v: gs.enr.n ? 100 * gs.enr.named_method / gs.enr.n : 0, suffix: "%", l: "of ranked firms read, not members", cls: "enr" },
-    ], "Ranked firms outside the institute often refer to lean without naming a practice; members name practices.");
+      { v: nG("MM") ? 100 * named("MM") / nG("MM") : 0, suffix: "%", l: `of Member-mentioned firms name a practice (${named("MM")} of ${nG("MM")})`, cls: "MM" },
+      { v: nG("NM") ? 100 * named("NM") / nG("NM") : 0, suffix: "%", l: `of Non-member-mentioned firms name a practice (${named("NM")} of ${nG("NM")})`, cls: "NM" },
+    ], "Members that mention lean usually name a practice; non-members more often refer to lean in general terms.");
   }
   let yearTimer = null;
   function stepYear(animate) {
@@ -147,7 +151,6 @@ window.Landscape = (function () {
 
   async function init(data) {
     ({ orgs, S } = data);
-    gs = S.group_stats;
     M_NAMES = data.methods.names;
     initHero(data.topo);
   }

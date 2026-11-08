@@ -224,3 +224,21 @@ details.more .card.wide { margin-top: 0; }
 #meth-list table { width: 100%; table-layout: auto; }
 #meth-list td { white-space: normal; overflow-wrap: break-word; }
 #meth-list th { white-space: nowrap; }
+
+/* v26: the article’s four groups (colors of its figures) */
+:root { --MM: #82B184; --MM-d: #2E7D32; --MS: #799FB9; --MS-d: #1F5F8B; --NM: #CA94AF; --NM-d: #A64D79; --NS: #C9C5BB; --NS-d: #6B6760; --U: #ffffff; --U-d: #A9A59B; }
+.chip[data-g="MM"].on { background: var(--MM); border-color: var(--MM-d); }
+.dot.MM { background: var(--MM); border-color: var(--MM-d); }
+.bignum.MM .v { color: var(--MM-d); }
+.chip[data-g="MS"].on { background: var(--MS); border-color: var(--MS-d); }
+.dot.MS { background: var(--MS); border-color: var(--MS-d); }
+.bignum.MS .v { color: var(--MS-d); }
+.chip[data-g="NM"].on { background: var(--NM); border-color: var(--NM-d); }
+.dot.NM { background: var(--NM); border-color: var(--NM-d); }
+.bignum.NM .v { color: var(--NM-d); }
+.chip[data-g="NS"].on { background: var(--NS); border-color: var(--NS-d); }
+.dot.NS { background: var(--NS); border-color: var(--NS-d); }
+.bignum.NS .v { color: var(--NS-d); }
+.chip[data-g="U"].on { background: var(--U); border-color: var(--U-d); }
+.dot.U { background: var(--U); border-color: var(--U-d); }
+.bignum.U .v { color: var(--U-d); }

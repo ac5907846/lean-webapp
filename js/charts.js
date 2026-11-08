@@ -1,8 +1,15 @@
 // Small chart builders on D3: grouped and stacked bars, dot-and-interval, lines, a bubble matrix. Every function
 // renders into a container element, measures its width, and redraws on resize through C.onResize.
 window.C = (function () {
-  const GROUP = { lci: { name: "Institute members", fill: "#8fd3c3", dark: "#0f6b5b" }, enr: { name: "Ranked firms, not members", fill: "#f6c89a", dark: "#a9491a" },
-                  fed: { name: "Other federal award recipients", fill: "#c9c4e8", dark: "#4a3b8c" } };
+  // the article’s four groups (owner, 2026-11-08: the map and the firm list use the paper’s groups and names, colors of its figures):
+  // membership in any LCI directory 2013 to 2026, crossed with a qualifying website reference; no archived website read = Unclassified
+  const GROUP = { MM: { name: "Member-mentioned", fill: "#82B184", dark: "#2E7D32" }, MS: { name: "Member-silent", fill: "#799FB9", dark: "#1F5F8B" },
+                  NM: { name: "Non-member-mentioned", fill: "#CA94AF", dark: "#A64D79" }, NS: { name: "Non-member-silent", fill: "#C9C5BB", dark: "#6B6760" },
+                  U: { name: "Unclassified", fill: "#ffffff", dark: "#A9A59B" } };
+  const GROUPS = ["MM", "MS", "NM", "NS", "U"];
+  const isMember = (d) => !!(d.in_lci || d.lci_first_year || d.lci_type);
+  const group4 = (d) => (d.level == null ? "U" : (isMember(d) ? "M" : "N") + (d.level >= 1 ? "M" : "S"));
+  const SRC = { lci: "LCI corporate directory (2026)", enr: "ENR Top 400 (2025)", fed: "Federal project award recipient" };
   // labels shared by the views, in the words of the article (owner, 2026-11-08: no construction words beyond the defined names)
   const TYPE = { "General contractors and construction managers": "Builders and project managers", "Specialty trade contractors": "Specialty trade firms",
                  "Lean and management consultants": "Management consultants", "Architects and engineers": "Architects and engineers", "Owners": "Project owners",
@@ -235,5 +242,5 @@ window.C = (function () {
     return [(c - s) / d, (c + s) / d];
   }
 
-  return { GROUP, LEVEL, TYPE, LVL, MARKET, CODES, hbars, stackedYears, dotInterval, lines, bubbleMatrix, smallMultiples, heatTable, wilson, legend, showTip, moveTip, hideTip, onResize, pct, fmt };
+  return { GROUP, GROUPS, group4, SRC, LEVEL, TYPE, LVL, MARKET, CODES, hbars, stackedYears, dotInterval, lines, bubbleMatrix, smallMultiples, heatTable, wilson, legend, showTip, moveTip, hideTip, onResize, pct, fmt };
 })();
