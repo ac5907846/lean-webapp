@@ -219,3 +219,8 @@ details.more[open] > summary { margin-bottom: 4px; }
 details.more .masonry { margin-top: 8px; }
 details.more .masonry .card { box-shadow: none; }
 details.more .card.wide { margin-top: 0; }
+/* v23: the firm list beside the pairs matrix on the Practices tab */
+#meth-list { max-height: 640px; overflow-y: auto; overflow-x: hidden; }
+#meth-list table { width: 100%; table-layout: auto; }
+#meth-list td { white-space: normal; overflow-wrap: break-word; }
+#meth-list th { white-space: nowrap; }

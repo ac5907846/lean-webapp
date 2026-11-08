@@ -5,10 +5,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>What Do Management Signals Reveal?</title>
 <meta name="description" content="What Do Management Signals Reveal? Organizational Positioning and Outcomes in Project-Based Markets. The firms behind the study: which U.S. project-based firms display two management credentials, professional institute membership and website references to lean project delivery, where they are, which practices they name, and since when. Every firm links to its sources.">
-<link rel="preload" href="data/summary.json?v=22" as="fetch" crossorigin>
-<link rel="preload" href="data/orgs.json?v=22" as="fetch" crossorigin>
-<link rel="preload" href="data/us-states.json?v=22" as="fetch" crossorigin>
-<link rel="stylesheet" href="css/app.css?v=22">
+<link rel="preload" href="data/summary.json?v=23" as="fetch" crossorigin>
+<link rel="preload" href="data/orgs.json?v=23" as="fetch" crossorigin>
+<link rel="preload" href="data/us-states.json?v=23" as="fetch" crossorigin>
+<link rel="stylesheet" href="css/app.css?v=23">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/topojson/3.0.2/topojson.min.js"></script>
 </head>
@@ -95,19 +95,12 @@
       <button class="chip on fed" data-g="fed">Other federal award recipients</button>
     </div>
     <div class="grid2 cols">
-      <div class="col">
-        <figure class="card">
-          <figcaption>Lean practices named on corporate websites, firms per practice</figcaption>
-          <div id="fig-methods"></div>
-          <p class="fine">Any archived page of the firm, 2008 to 2026. Named practices count on their own; general planning and improvement tools count only on a page that also carries a general lean reference or a named practice. Click a practice to list the firms.</p>
-        </figure>
-        <div class="card" id="meth-list"></div>
-      </div>
       <figure class="card">
         <figcaption>Practices named together by the same firm</figcaption>
         <div id="fig-cooc"></div>
-        <p class="fine">Diagonal: firms naming the practice; off the diagonal: firms naming both. Practices named by 3 or more firms in the chosen groups. Click a circle to list them.</p>
+        <p class="fine">Any archived page of the firm, 2008 to 2026. Diagonal: firms naming the practice; off the diagonal: firms naming both. Practices named by 3 or more firms in the chosen groups. Click a circle to list the firms.</p>
       </figure>
+      <div class="card" id="meth-list"></div>
     </div>
   </section>
 
@@ -120,6 +113,11 @@
           <figcaption>Website references to lean practices, by group</figcaption>
           <div id="fig-groups"></div>
           <p class="fine">Firms whose archived website was read (2008 to 2026 for the federal award recipients of the panel; 2024 to 2026 for the rest). Website measures capture public communication, not verified implementation.</p>
+        </figure>
+        <figure class="card">
+          <figcaption>Lean practices named on corporate websites, firms per practice</figcaption>
+          <div id="fig-practices"></div>
+          <p class="fine">Any archived page of the firm, 2008 to 2026, all three groups. Named practices count on their own; general planning and improvement tools (grey labels) count only on a page that also carries a general lean reference or a named practice.</p>
         </figure>
         <figure class="card">
           <figcaption>First observed public commitment to lean project delivery, by year</figcaption>
@@ -153,13 +151,13 @@
 <div class="tip" id="tip" hidden></div>
 <footer class="site"><span id="foot"></span></footer>
 
-<script src="js/motion.js?v=22"></script>
-<script src="js/charts.js?v=22"></script>
-<script src="js/usmap.js?v=22"></script>
-<script src="js/landscape.js?v=22"></script>
-<script src="js/organizations.js?v=22"></script>
-<script src="js/methods.js?v=22"></script>
-<script src="js/datatab.js?v=22"></script>
-<script src="js/app.js?v=22"></script>
+<script src="js/motion.js?v=23"></script>
+<script src="js/charts.js?v=23"></script>
+<script src="js/usmap.js?v=23"></script>
+<script src="js/landscape.js?v=23"></script>
+<script src="js/organizations.js?v=23"></script>
+<script src="js/methods.js?v=23"></script>
+<script src="js/datatab.js?v=23"></script>
+<script src="js/app.js?v=23"></script>
 </body>
 </html>

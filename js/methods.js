@@ -1,5 +1,5 @@
-// Practices view: firms per named practice (by group), the pairs named together, the firms behind a practice or a pair
-// (click), and the first year each practice is named in the panel.
+// Practices view (v22): the practices named together by the same firm, and the firms behind a practice or a pair (click a
+// circle). The firms-per-practice bars and the first year named are in the Data tab’s More figures.
 window.Methods = (function () {
   let m, orgs, G;
   const $ = (id) => document.getElementById(id);
@@ -11,16 +11,6 @@ window.Methods = (function () {
   const count = (rows) => { const c = {}; rows.forEach((d) => d.methods.forEach((k) => { c[k] = (c[k] || 0) + 1; })); return c; };
   const pairs = (rows) => { const p = {}; rows.forEach((d) => { const ms = [...d.methods].sort(); ms.forEach((a, i) => ms.slice(i + 1).forEach((b) => { p[`${a}|${b}`] = (p[`${a}|${b}`] || 0) + 1; })); }); return p; };
 
-  function figMethods() {
-    const rows0 = pool(), c = count(rows0);
-    const rows = m.routines.map((k) => ({ label: m.names[k], key: k, values: { n: c[k] || 0 }, spec: m.specific.includes(k) })).filter((r) => r.values.n).sort((a, b) => b.values.n - a.values.n);
-    const el = $("fig-methods");
-    C.hbars(el, rows, [{ key: "n", name: `firms naming the practice (${C.fmt(rows0.length)} name at least one)`, fill: "#f4a259", dark: "#a9491a" }],
-      { share: false, rowH: 14, gap: 6, left: 170, labelN: false, onClick: (r) => { pick = pick && pick.a === r.key && !pick.b ? null : { a: r.key }; redraw(); }, selected: (r) => pick && pick.a === r.key && !pick.b });
-    el.querySelectorAll("svg text").forEach((t) => { const r = rows.find((x) => x.label === t.textContent); if (r && !r.spec) t.setAttribute("fill", "#777"); });
-    const note = document.createElement("div"); note.className = "legend"; note.innerHTML = `<span style="--sw:#1c1c1c;--sb:#1c1c1c">named practices</span><span style="--sw:#999;--sb:#999">general planning and improvement tools</span>`;
-    el.appendChild(note);
-  }
   function figCooc() {
     const rows0 = pool(), c = count(rows0), p = pairs(rows0);
     const keys = m.routines.filter((k) => (c[k] || 0) >= 3);
@@ -28,7 +18,7 @@ window.Methods = (function () {
   }
   function list() {
     const el = $("meth-list");
-    if (!pick) { el.innerHTML = '<p class="muted">Click a practice, or a pair in the matrix, to list the firms that name it.</p>'; return; }
+    if (!pick) { el.innerHTML = '<p class="muted">Click a circle in the matrix to list the firms that name that practice, or both practices of a pair.</p>'; return; }
     const rows = pool().filter((d) => d.methods.includes(pick.a) && (!pick.b || d.methods.includes(pick.b))).sort((a, b) => a.name.localeCompare(b.name));
     const head = pick.b ? `${m.names[pick.a]} and ${m.names[pick.b]}` : m.names[pick.a];
     el.innerHTML = `<h3>${head}: ${rows.length} firm${rows.length === 1 ? "" : "s"} <a href="#" id="meth-clear" class="muted">clear</a></h3>` +
@@ -36,7 +26,7 @@ window.Methods = (function () {
       rows.map((d) => `<tr><td><a href="#organizations/${encodeURIComponent(d.id)}">${d.name}</a></td><td><span class="dot ${d.group}"></span>${SHORTG[d.group]}</td><td>${d.state || ""}</td><td class="num">${d.methods.length}</td></tr>`).join("") + `</table>`;
     $("meth-clear").addEventListener("click", (ev) => { ev.preventDefault(); pick = null; redraw(); });
   }
-  function redraw() { figMethods(); figCooc(); list(); }
+  function redraw() { figCooc(); list(); }
   function init(data) {
     m = data.methods; orgs = data.orgs; G = C.GROUP;
     document.querySelectorAll("#meth-groups .chip").forEach((c) => c.addEventListener("click", () => {
@@ -45,7 +35,7 @@ window.Methods = (function () {
     const c0 = count(pool());
     pick = { a: m.routines.slice().sort((x, y) => (c0[y] || 0) - (c0[x] || 0))[0] };   // start on the most named practice
     redraw();
-    C.onResize(() => { figMethods(); figCooc(); });
+    C.onResize(() => { figCooc(); });
   }
   return { init, show() {}, hide() {} };
 })();

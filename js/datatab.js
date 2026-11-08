@@ -7,7 +7,7 @@ window.DataTab = (function () {
 
 
   // The four background figures (moved from the Map tab on 2026-11-08, owner: keep the map uncluttered), drawn when opened.
-  let enr, lci;
+  let enr, lci, orgsAll = [];
   const G = C.GROUP;
   function figCommit() {
     const years = d3.range(2008, 2027);
@@ -48,11 +48,21 @@ window.DataTab = (function () {
     const items = m.routines.map((k) => ({ name: m.names[k], values: m.first_year[k] || {}, total: d3.sum(Object.values(m.first_year[k] || {})) })).filter((it) => it.total >= 3).sort((a, b) => b.total - a.total);
     C.smallMultiples($("fig-firstyear"), items, years, { cols: window.innerWidth < 700 ? 2 : 4, h: 100 });
   }
-  function drawMore() { figGroups(); figCommit(); figEnr(); figLci(); figFirst(); }
+  function figPractices() {
+    const O = orgsAll, c = {};
+    const firms = O.filter((d) => d.methods && d.methods.length);
+    firms.forEach((d) => d.methods.forEach((k) => { c[k] = (c[k] || 0) + 1; }));
+    const rows = m.routines.map((k) => ({ label: m.names[k], key: k, values: { n: c[k] || 0 }, spec: m.specific.includes(k) })).filter((r) => r.values.n).sort((a, b) => b.values.n - a.values.n);
+    const el = $("fig-practices");
+    C.hbars(el, rows, [{ key: "n", name: `firms naming the practice (${C.fmt(firms.length)} name at least one)`, fill: "#f4a259", dark: "#a9491a" }], { share: false, rowH: 14, gap: 6, left: 170, labelN: false });
+    el.querySelectorAll("svg text").forEach((t) => { const r = rows.find((x) => x.label === t.textContent); if (r && !r.spec) t.setAttribute("fill", "#777"); });
+  }
+  function drawMore() { figGroups(); figPractices(); figCommit(); figEnr(); figLci(); figFirst(); }
 
   function init(data) {
     S = data.S; m = data.methods;
     enr = data.enr; lci = data.lci;
+    orgsAll = data.orgs;
     const det = $("more-figs");
     det.addEventListener("toggle", () => { if (det.open) drawMore(); });
     C.onResize(() => { if (det.open) drawMore(); });
